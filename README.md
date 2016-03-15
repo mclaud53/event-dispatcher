@@ -1,7 +1,3 @@
 # event-dispatcher
 
-  [![NPM Version][npm-image]][npm-url]
-  [![NPM Downloads][downloads-image]][downloads-url]
-  [![Linux Build][travis-image]][travis-url]
-  [![Windows Build][appveyor-image]][appveyor-url]
-  [![Test Coverage][coveralls-image]][coveralls-url]
+ [![Build Status](https://api.travis-ci.org/mclaud53/event-dispatcher.svg?branch=master)](http://travis-ci.org/mclaud53/event-dispatcher)
