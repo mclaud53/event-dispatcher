@@ -1,0 +1,92 @@
+/**
+ * The base event class.
+ *
+ * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
+ */
+export class Event<T>
+{
+	/**
+	 * The type of event.
+	 */
+	private _type: string;
+
+
+	private _target: T;
+
+	/**
+	 * Indicates whether the behavior associated with the event can be prevented.
+	 */
+	private _cancellable: boolean;
+
+	/**
+	 * Indicates whether the preventDefault() method has been called on the event.
+	 */
+	private _isDefaultPrevented: boolean = false;
+
+	/**
+	 * The options of event.
+	 */
+	private _options: Object;
+
+	/**
+	 * @contructor
+	 * @param {string} type The type of event.
+	 * @param {T} target
+	 * @param {boolean} cancellable Indicates whether the behavior associated with the event can be prevented.
+	 * @param {Object} options (optional) The options of event.
+	 */
+	public constructor(type: string, target: T, cancellable: boolean, options: Object = {})
+	{
+		this._type = type;
+		this._target = target;
+		this._cancellable = cancellable;
+		this._options = options;
+	}
+
+	/**
+	 * The type of event.
+	 */
+	public get type(): string
+	{
+		return this._type;
+	}
+
+	public get target(): T
+	{
+		return this._target;
+	}
+
+	/**
+	 * Indicates whether the behavior associated with the event can be prevented.
+	 */
+	public get cancellable(): boolean
+	{
+		return this._cancellable;
+	}
+
+	/**
+	 * Indicates whether the preventDefault() method has been called on the event.
+	 */
+	public get isDefaultPrevented(): boolean
+	{
+		return this._isDefaultPrevented;
+	}
+
+	/**
+	 * The options of event.
+	 */
+	public get options(): Object
+	{
+		return this._options;
+	}
+
+	/**
+	 * Cancels an event's default behavior if that behavior can be canceled.
+	 */
+	public preventDefault(): void
+	{
+		if (this.cancellable) {
+			this._isDefaultPrevented = true;
+		}
+	}
+}
