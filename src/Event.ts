@@ -10,7 +10,9 @@ export class Event<T>
 	 */
 	private _type: string;
 
-
+	/**
+	 * The object that dispatched event.
+	 */
 	private _target: T;
 
 	/**
@@ -51,6 +53,9 @@ export class Event<T>
 		return this._type;
 	}
 
+	/**
+	 * The object that dispatched event.
+	 */
 	public get target(): T
 	{
 		return this._target;
