@@ -6,7 +6,7 @@ module.exports = {
         ],
         options: {
             fast: 'never',
-            module: 'amd',
+            module: 'commonjs',
             target: 'es5'
         }
     }
