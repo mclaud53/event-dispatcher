@@ -7,7 +7,9 @@ module.exports = {
         options: {
             fast: 'never',
             module: 'commonjs',
-            target: 'es5'
+            target: 'es5',
+            comments: true,
+            declaration: true
         }
     }
 };
