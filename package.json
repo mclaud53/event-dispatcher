@@ -1,7 +1,7 @@
 {
   "name": "event-dispatcher",
   "version": "1.0.0",
-  "description": "",
+  "description": "Implementation of EventDispatcher",
   "main": "event-dispatcher.js",
   "scripts": {
     "test": "grunt test"

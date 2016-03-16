@@ -212,6 +212,7 @@ export class EventDispatcher<E extends event.Event<T>, T>
 		}
 
 		dispatcher.add(this.onEvent, this);
+		this._dispatchers.push(dispatcher);
 	}
 
 	/**
@@ -248,7 +249,7 @@ export class EventDispatcher<E extends event.Event<T>, T>
 		var index: number = this._dispatchers.indexOf(dispatcher);
 
 		if (index > -1) {
-			dispatcher.remove(this.onEvent, event);
+			dispatcher.remove(this.onEvent, this);
 			this._dispatchers.splice(index, 1);
 		}
 	}

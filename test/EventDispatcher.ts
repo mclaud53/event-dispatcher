@@ -5,6 +5,7 @@ import assert = require('assert');
 require('sinomocha')();
 
 describe('EventDispatcher', function() {
+
 	it('creation', function() {
 		var instance: dispatcher.EventDispatcher<event.Event<Object>, Object>;
 		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
@@ -261,4 +262,127 @@ describe('EventDispatcher', function() {
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed');
 	});
+
+	it('relay', function() {
+		var source: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>;
+
+		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relay(source);
+		assert.equal(source.hasListeners, true, 'The EventDispatcher must be suspended');
+	});	
+
+	it('relayed', function() {
+		var source: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>;
+
+		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relay(source);
+		assert.equal(instance.relayed(source), true, 'The EventDispatcher must be relayed');
+	});		
+
+	it('relay & dispatch', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			source: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relay(source);
+		instance.add(listener, target);
+		source.dispatch(e);
+
+		assert.equal(actualCallCounter, 1, 'The listener must be executed');
+	});
+
+	it('relay & unrelay & dispatch', function() {
+		var source: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>;
+
+		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relay(source);
+		assert.equal(source.hasListeners, true, 'The EventDispatcher must be suspended');
+		instance.unrelay(source);
+		assert.equal(instance.hasListeners, false, 'The list of listeners must be empty');
+	});
+
+	it('relayAll two identical dispatchers & dispatch', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			source: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relayAll([source, source]);
+		instance.add(listener, target);
+		source.dispatch(e);
+
+		assert.equal(actualCallCounter, 1, 'The listener must be executed');
+	});	
+
+	it('relayAll two dispatchers & both dispatch event', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			source1: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			source2: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		source1 = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		source2 = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relayAll([source1, source2]);
+		instance.add(listener, target);
+		source1.dispatch(e);
+		source2.dispatch(e);
+
+		assert.equal(actualCallCounter, 2, 'The listener must be executed twice');
+	});	
+
+	it('relayAll & unrelayAll & dispatch', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			source1: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			source2: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		source1 = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		source2 = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relayAll([source1, source2]);
+		instance.unrelayAll([source1, source2]);
+		instance.add(listener, target);
+		source1.dispatch(e);
+		source2.dispatch(e);
+
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
+	});		
 });
