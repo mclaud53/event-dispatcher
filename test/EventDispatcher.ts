@@ -163,5 +163,102 @@ describe('EventDispatcher', function() {
 
 		assert.equal(instance.hasListeners, false, 'The list of listeners must be empty');
 		assert.equal(actualCallCounter, 0, 'The listener mustn\'t be executed');
+	});
+
+	it('suspend', function() {
+		var instance: dispatcher.EventDispatcher<event.Event<Object>, Object>;
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+
+		instance.suspend(false);
+
+		assert.equal(instance.suspended, true, 'The EventDispatcher must be suspended');
+	});	
+
+	it('add & suspend & dispatch', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.add(listener, target);
+		instance.suspend(false);
+		instance.dispatch(e);
+
+		assert.equal(instance.suspended, true, 'The EventDispatcher must be suspended');
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
+	});	
+
+	it('add & suspend & dispatch cancellable', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, true, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.add(listener, target);
+		instance.suspend(false);
+		instance.dispatch(e);
+
+		assert.equal(instance.suspended, true, 'The EventDispatcher must be suspended');
+		assert.equal(actualCallCounter, 1, 'The listener must be executed');
+	});	
+
+	it('add & suspend & dispatch & resume', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.add(listener, target);
+		instance.suspend(false);
+		instance.dispatch(e);
+
+		assert.equal(instance.suspended, true, 'The EventDispatcher must be suspended');
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
+
+		instance.resume();
+
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
 	});		
+
+	it('add & suspend queued & dispatch & resume', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.add(listener, target);
+		instance.suspend(true);
+		instance.dispatch(e);
+
+		assert.equal(instance.suspended, true, 'The EventDispatcher must be suspended');
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
+
+		instance.resume();
+
+		assert.equal(actualCallCounter, 1, 'The listener must be executed');
+	});
 });
