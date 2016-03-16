@@ -270,7 +270,7 @@ describe('EventDispatcher', function() {
 		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
 		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
 		instance.relay(source);
-		assert.equal(source.hasListeners, true, 'The EventDispatcher must be suspended');
+		assert.equal(source.hasListeners, true, 'The list of listeners can\'t be empty');
 	});	
 
 	it('relayed', function() {
@@ -311,7 +311,7 @@ describe('EventDispatcher', function() {
 		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
 		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
 		instance.relay(source);
-		assert.equal(source.hasListeners, true, 'The EventDispatcher must be suspended');
+		assert.equal(source.hasListeners, true, 'The list of listeners can\'t be empty');
 		instance.unrelay(source);
 		assert.equal(instance.hasListeners, false, 'The list of listeners must be empty');
 	});
@@ -384,5 +384,59 @@ describe('EventDispatcher', function() {
 		source2.dispatch(e);
 
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
-	});		
+	});
+
+	it('purgeListeners', function() {
+		var target: Object = {},
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				// do nothing
+			};
+
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.add(listener, target);
+
+		assert.equal(instance.hasListeners, true, 'The EventDispatcher must has listeners');
+
+		instance.purge();
+
+		assert.equal(instance.hasListeners, false, 'The EventDispatcher can\'t has listeners');
+	});	
+
+	it('purgeDispatchers', function() {
+		var source: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>;
+
+		source = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.relay(source);
+		assert.equal(source.hasListeners, true, 'The list of listeners can\'t be empty');
+		instance.purge();
+		assert.equal(source.hasListeners, false, 'The list of listeners must be empty');
+	});
+
+	it('purgeQueue', function() {
+		var type: string = 'TEST',
+			target: Object = {},
+			options: Object = { key: 'value' },
+			instance: dispatcher.EventDispatcher<event.Event<Object>, Object>,
+			e: event.Event<Object> = new event.Event<Object>(type, target, false, { key: 'value' }),
+			actualCallCounter: number = 0,
+			listener: { (e: event.Event<Object>): void } = function(e: event.Event<Object>): void {
+				actualCallCounter++;
+			};
+
+		instance = new dispatcher.EventDispatcher<event.Event<Object>, Object>();
+		instance.add(listener, target);
+		instance.suspend(true);
+		instance.dispatch(e);
+
+		assert.equal(instance.suspended, true, 'The EventDispatcher must be suspended');
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
+
+		instance.purge();
+		instance.resume();
+		
+		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed');
+	});	
 });
