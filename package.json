@@ -1,5 +1,5 @@
 {
-  "name": "event-dispatcher",
+  "name": "node-event-dispatcher",
   "version": "1.0.0",
   "description": "Implementation of EventDispatcher",
   "main": "event-dispatcher.js",
