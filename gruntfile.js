@@ -18,8 +18,12 @@ module.exports = function (grunt) {
         'mochaTest:test'
     ]);
 
-    grunt.registerTask('install', [
-        'npm install'
+    grunt.registerTask('build', [
+        'clean:default',
+        'typings:default',
+        'ts:default',
+        'mochaTest:test',
+        'uglify:default'
     ]);
 
     grunt.registerTask('default', [
