@@ -1,11 +1,9 @@
-export = ListenerOptions;
-
 /**
  * The interface of options of listener.
  *
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
-interface ListenerOptions
+export interface ListenerOptions
  {
  	/**
  	 * The listener will be executed only once. After that the listener will be automatically removed.

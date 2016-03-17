@@ -1,11 +1,9 @@
-export = Event;
-
 /**
  * The base event class.
  *
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
-class Event<T>
+export class Event<T>
 {
 	/**
 	 * The type of event.

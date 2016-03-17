@@ -1,14 +1,12 @@
-import Event = require('./Event');
-import ListenerOptions = require('./ListenerOptions');
-
-export = Listener;
+import ev = require('./Event');
+import lo = require('./ListenerOptions');
 
 /**
  * The interface of listener.
  *
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
-interface Listener<E extends Event<T>, T>
+export interface Listener<E extends ev.Event<T>, T>
 {
 	/**
 	 * The listener of the events.
@@ -40,5 +38,5 @@ interface Listener<E extends Event<T>, T>
      *
      * @type {Object}
      */
-	options?: ListenerOptions;
+	options?: lo.ListenerOptions;
 }

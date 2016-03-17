@@ -1,15 +1,13 @@
-import Event = require('./Event');
-import Listener = require('./Listener');
-import ListenerOptions = require('./ListenerOptions');
-
-export = EventDispatcher;
+import ev = require('./Event');
+import ls = require('./Listener');
+import lo = require('./ListenerOptions');
 
 /**
  * The dispatcher of events.
  *
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
-class EventDispatcher<E extends Event<T>, T>
+export class EventDispatcher<E extends ev.Event<T>, T>
 {
 
 	/**
@@ -71,7 +69,7 @@ class EventDispatcher<E extends Event<T>, T>
 	 *		['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public add(listener: { (event: E): void }, scope: Object, eventType: (string | string[]) = null, options: ListenerOptions = null): void
+	public add(listener: { (event: E): void }, scope: Object, eventType: (string | string[]) = null, options: lo.ListenerOptions = null): void
 	{
 		var i: number,
 			l: ListenerHelper<E, T> = null,
@@ -108,7 +106,7 @@ class EventDispatcher<E extends Event<T>, T>
 	 *
 	 * @param {Array} listeners The list of listener of the events.
 	 */
-	public addAll(listeners: Listener<E, T>[]): void
+	public addAll(listeners: ls.Listener<E, T>[]): void
 	{
 		var i: number;
 
@@ -215,7 +213,7 @@ class EventDispatcher<E extends Event<T>, T>
 	 *
 	 * @param {Array} listeners The list of listeners of the events.
 	 */
-	public removeAll(listeners: Listener<E, T>[]): void
+	public removeAll(listeners: ls.Listener<E, T>[]): void
 	{
 		var i: number;
 
@@ -272,7 +270,7 @@ class EventDispatcher<E extends Event<T>, T>
 	 *		['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public relay(dispatcher: EventDispatcher<E, T>, eventType: (string | string[]) = null, options: ListenerOptions = null): void
+	public relay(dispatcher: EventDispatcher<E, T>, eventType: (string | string[]) = null, options: lo.ListenerOptions = null): void
 	{
 		if (this.relayed(dispatcher)) {
 			return;
@@ -293,7 +291,7 @@ class EventDispatcher<E extends Event<T>, T>
 	 *		['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public relayAll(dispatchers: EventDispatcher<E, T>[], eventType: (string | string[]) = null, options: ListenerOptions = null): void
+	public relayAll(dispatchers: EventDispatcher<E, T>[], eventType: (string | string[]) = null, options: lo.ListenerOptions = null): void
 	{
 		var i: number;
 		for (i = 0; i < dispatchers.length; i++) {
@@ -448,7 +446,7 @@ class EventDispatcher<E extends Event<T>, T>
  * @private
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
-class ListenerHelper<E extends Event<T>, T>
+class ListenerHelper<E extends ev.Event<T>, T>
 {
 	/**
 	 * The listener of the events.
@@ -468,7 +466,7 @@ class ListenerHelper<E extends Event<T>, T>
 
 	private _listOfDenyTypes: string[] = null;
 
-	private _options: ListenerOptions;
+	private _options: lo.ListenerOptions;
 
 	private _timeout: Object = null;
 
@@ -482,7 +480,7 @@ class ListenerHelper<E extends Event<T>, T>
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 */
-	public constructor(listener: { (event: E): void }, scope: Object, eventType: (string | string[]), options: ListenerOptions)
+	public constructor(listener: { (event: E): void }, scope: Object, eventType: (string | string[]), options: lo.ListenerOptions)
 	{
 		this._listener = listener;
 		this._scope = scope;
@@ -521,12 +519,12 @@ class ListenerHelper<E extends Event<T>, T>
 		return this._scope;
 	}
 
-	public get options(): ListenerOptions
+	public get options(): lo.ListenerOptions
 	{
 		return this._options;
 	}
 
-	public set options(options: ListenerOptions)
+	public set options(options: lo.ListenerOptions)
 	{
 		if (null === options) {
 			return;

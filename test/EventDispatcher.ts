@@ -1,6 +1,6 @@
 /// <reference path="../typings/main.d.ts" />
-import Event = require('../src/Event');
-import EventDispatcher = require('../src/EventDispatcher');
+import ev = require('../src/Event');
+import ed = require('../src/EventDispatcher');
 import assert = require('assert');
 import sinon = require('sinon');
 require('sinomocha')();
@@ -8,8 +8,8 @@ require('sinomocha')();
 describe('EventDispatcher', function() {
 
 	it('creation', function() {
-		var instance: EventDispatcher<Event<Object>, Object>;
-		instance = new EventDispatcher<Event<Object>, Object>();
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>;
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
 		assert.equal(instance.hasListeners, false, 'The new EventDispatcher can\'t has listeners');
 		assert.equal(instance.suspended, false, 'The new EventDispatcher can\'t be suspended');
@@ -17,12 +17,12 @@ describe('EventDispatcher', function() {
 
 	it('add', function() {
 		var target: Object = {},
-			instance: EventDispatcher<Event<Object>, Object>,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				// do nothing
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 
 		assert.equal(instance.hasListeners, true, 'The EventDispatcher must has listeners');
@@ -30,12 +30,12 @@ describe('EventDispatcher', function() {
 
 	it('has', function() {
 		var target: Object = {},
-			instance: EventDispatcher<Event<Object>, Object>,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				// do nothing
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 
 		assert.equal(instance.has(listener, target), true, 'The listener must exists in the list of listeners');
@@ -45,14 +45,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.dispatch(e);
 
@@ -63,14 +63,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.add(listener, target);
 		instance.dispatch(e);
@@ -82,15 +82,15 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCall: number[] = [];
 
-		instance = new EventDispatcher<Event<Object>, Object>();
-		instance.add(function(e: Event<Object>): void {
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance.add(function(e: ev.Event<Object>): void {
 			actualCall.push(1);
 		}, target);
-		instance.add(function(e: Event<Object>): void {
+		instance.add(function(e: ev.Event<Object>): void {
 			actualCall.push(2);
 		}, target);
 		instance.dispatch(e);
@@ -102,14 +102,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.remove(listener, target);
 		instance.dispatch(e);
@@ -120,12 +120,12 @@ describe('EventDispatcher', function() {
 
 	it('addAll', function() {
 		var target: Object = {},
-			instance: EventDispatcher<Event<Object>, Object>,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				// do nothing
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.addAll([{
 			listener: listener,
 			scope: target
@@ -138,14 +138,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.addAll([{
 			listener: listener,
 			scope: target
@@ -159,14 +159,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.addAll([
 			{
 				listener: listener,
@@ -186,14 +186,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.addAll([{
 			listener: listener,
 			scope: target
@@ -209,8 +209,8 @@ describe('EventDispatcher', function() {
 	});
 
 	it('suspend', function() {
-		var instance: EventDispatcher<Event<Object>, Object>;
-		instance = new EventDispatcher<Event<Object>, Object>();
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>;
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
 		instance.suspend(false);
 
@@ -221,14 +221,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.suspend(false);
 		instance.dispatch(e);
@@ -241,14 +241,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.suspend(false);
 		instance.dispatch(e);
@@ -261,14 +261,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.suspend(false);
 		instance.dispatch(e);
@@ -285,14 +285,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.suspend(true);
 		instance.dispatch(e);
@@ -306,21 +306,21 @@ describe('EventDispatcher', function() {
 	});
 
 	it('relay', function() {
-		var source: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>;
+		var source: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
 
-		source = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relay(source);
 		assert.equal(source.hasListeners, true, 'The list of listeners can\'t be empty');
 	});	
 
 	it('relayed', function() {
-		var source: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>;
+		var source: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
 
-		source = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relay(source);
 		assert.equal(instance.relayed(source), true, 'The EventDispatcher must be relayed');
 	});		
@@ -329,16 +329,16 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			source: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			source: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		source = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relay(source);
 		instance.add(listener, target);
 		source.dispatch(e);
@@ -347,11 +347,11 @@ describe('EventDispatcher', function() {
 	});
 
 	it('relay & unrelay & dispatch', function() {
-		var source: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>;
+		var source: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
 
-		source = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relay(source);
 		assert.equal(source.hasListeners, true, 'The list of listeners can\'t be empty');
 		instance.unrelay(source);
@@ -362,16 +362,16 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			source: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			source: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		source = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relayAll([source, source]);
 		instance.add(listener, target);
 		source.dispatch(e);
@@ -383,18 +383,18 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			source1: EventDispatcher<Event<Object>, Object>,
-			source2: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			source1: ed.EventDispatcher<ev.Event<Object>, Object>,
+			source2: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		source1 = new EventDispatcher<Event<Object>, Object>();
-		source2 = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source1 = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		source2 = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relayAll([source1, source2]);
 		instance.add(listener, target);
 		source1.dispatch(e);
@@ -407,18 +407,18 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			source1: EventDispatcher<Event<Object>, Object>,
-			source2: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			source1: ed.EventDispatcher<ev.Event<Object>, Object>,
+			source2: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		source1 = new EventDispatcher<Event<Object>, Object>();
-		source2 = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source1 = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		source2 = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relayAll([source1, source2]);
 		instance.unrelayAll([source1, source2]);
 		instance.add(listener, target);
@@ -430,12 +430,12 @@ describe('EventDispatcher', function() {
 
 	it('purgeListeners', function() {
 		var target: Object = {},
-			instance: EventDispatcher<Event<Object>, Object>,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				// do nothing
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 
 		assert.equal(instance.hasListeners, true, 'The EventDispatcher must has listeners');
@@ -446,11 +446,11 @@ describe('EventDispatcher', function() {
 	});	
 
 	it('purgeDispatchers', function() {
-		var source: EventDispatcher<Event<Object>, Object>,
-			instance: EventDispatcher<Event<Object>, Object>;
+		var source: ed.EventDispatcher<ev.Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
 
-		source = new EventDispatcher<Event<Object>, Object>();
-		instance = new EventDispatcher<Event<Object>, Object>();
+		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relay(source);
 		assert.equal(source.hasListeners, true, 'The list of listeners can\'t be empty');
 		instance.purge();
@@ -461,14 +461,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, false, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, false, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.suspend(true);
 		instance.dispatch(e);
@@ -487,11 +487,11 @@ describe('EventDispatcher', function() {
 	it('willDispatch', function () {
 		var type: string = 'TEST',
 			target: Object = {},
-			instance: EventDispatcher<Event<Object>, Object>;
-		instance = new EventDispatcher<Event<Object>, Object>();
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		assert.equal(instance.willDispatch(type), false, 'The new EventDispatcher can\'t dispatch event');
 
-		instance.add(function(event: Event<Object>): void {
+		instance.add(function(event: ev.Event<Object>): void {
 			// do nothing
 		}, target, type);
 		assert.equal(instance.willDispatch(type), true, 'The EventDispatcher must dispatch events for added listeners');
@@ -501,17 +501,17 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, type);
 		instance.dispatch(e);
-		instance.dispatch(new Event<Object>('WRONG_EVENT_TYPE', target, true, { key: 'value' }));
+		instance.dispatch(new ev.Event<Object>('WRONG_EVENT_TYPE', target, true, { key: 'value' }));
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed only once');
 	});
@@ -520,20 +520,20 @@ describe('EventDispatcher', function() {
 		var type: string = 'DENY_TYPE',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target);
 		instance.remove(listener, target, type);
 		assert.equal(instance.willDispatch(type), false, 'The EventDispatcher can\'t dispatch events for excluded types of event');
 
 		instance.dispatch(e);
-		instance.dispatch(new Event<Object>('ALLOW_TYPE', target, true, { key: 'value' }));
+		instance.dispatch(new ev.Event<Object>('ALLOW_TYPE', target, true, { key: 'value' }));
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed only once');
 	});	
@@ -543,13 +543,13 @@ describe('EventDispatcher', function() {
 			denyType: string = 'DENY_TYPE',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, [allowType, denyType]);
 
 		assert.equal(instance.willDispatch(allowType), true, 'The EventDispatcher must dispatch events for added listeners');
@@ -559,8 +559,8 @@ describe('EventDispatcher', function() {
 		assert.equal(instance.willDispatch(allowType), true, 'The EventDispatcher must dispatch events for added listeners');
 		assert.equal(instance.willDispatch(denyType), false, 'The EventDispatcher can\'t dispatch events for excluded types of event');
 
-		instance.dispatch(new Event<Object>(allowType, target, true, { key: 'value' }));
-		instance.dispatch(new Event<Object>(denyType, target, true, { key: 'value' }));
+		instance.dispatch(new ev.Event<Object>(allowType, target, true, { key: 'value' }));
+		instance.dispatch(new ev.Event<Object>(denyType, target, true, { key: 'value' }));
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed only once');
 	});	
@@ -569,14 +569,14 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			};
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, null, {single: true});
 		instance.dispatch(e);
 		instance.dispatch(e);
@@ -588,21 +588,21 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCall: number[] = [];
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(function (event: Event<Object>): void {
+		instance.add(function (event: ev.Event<Object>): void {
 			actualCall.push(10);
 		}, target, null, { priority: 10 });
 
-		instance.add(function(event: Event<Object>): void {
+		instance.add(function(event: ev.Event<Object>): void {
 			actualCall.push(-10);
 		}, target, null, { priority: -10 });
 
-		instance.add(function(event: Event<Object>): void {
+		instance.add(function(event: ev.Event<Object>): void {
 			actualCall.push(0);
 		}, target, null, { priority: 0 });
 	
@@ -615,15 +615,15 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			},
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, null, { delay: 100 });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
@@ -642,15 +642,15 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			},
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, null, { defer: true });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
@@ -666,15 +666,15 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			},
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, null, { buffer: 100 });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
@@ -700,15 +700,15 @@ describe('EventDispatcher', function() {
 		var type: string = 'TEST',
 			target: Object = {},
 			options: Object = { key: 'value' },
-			instance: EventDispatcher<Event<Object>, Object>,
-			e: Event<Object> = new Event<Object>(type, target, true, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			e: ev.Event<Object> = new ev.Event<Object>(type, target, true, { key: 'value' }),
 			actualCallCounter: number = 0,
-			listener: { (e: Event<Object>): void } = function(e: Event<Object>): void {
+			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
 				actualCallCounter++;
 			},
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
-		instance = new EventDispatcher<Event<Object>, Object>();
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.add(listener, target, null, { single: true, buffer: 100 });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
