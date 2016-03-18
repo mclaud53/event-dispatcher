@@ -25,11 +25,4 @@ module.exports = function (grunt) {
         'mochaTest:test',
         'uglify:default'
     ]);
-
-    grunt.registerTask('default', [
-        'clean:default',
-        'typings:default',
-        'ts:default',
-        'watch'
-    ]);
 };
