@@ -14,7 +14,7 @@ Definitions for typescript:
 ...
   "dependencies": {
   	...
-  	"node-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#42d85ae7d54dbcb08766ce52d65543b4f74f9577"
+  	"node-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#3e4e8cc89c8d6aa010968425329dcdd25c822a9d"
   	...
   }
 ...
@@ -324,6 +324,26 @@ dispatcher.add(function (e) {
 dispatcher.purgeListeners();
 
 dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> 
+```
+
+To remove all listeners by scope:
+```js
+var ned = require('node-event-dispatcher'),
+	scope1 = {},
+	scope2 = {},
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log('first listener');
+}, scope1);
+
+dispatcher.add(function (e) {
+	console.log('second listener');
+}, scope2);
+
+dispatcher.purgeListeners(scope1);
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> first listener
 ```
 
 To proxy events from other dispatcher:

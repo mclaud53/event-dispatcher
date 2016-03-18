@@ -445,6 +445,31 @@ describe('EventDispatcher', function() {
 		assert.equal(instance.hasListeners, false, 'The EventDispatcher can\'t has listeners');
 	});	
 
+	it('purgeListeners by scope', function() {
+		var sender: Object = {},
+			target1: Object = {},
+			target2: Object = {},
+			e: ev.Event<Object> = new ev.Event<Object>('EVENT', sender, false, { key: 'value' }),
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			actualCall: number[] = [];
+
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		instance.add(function(e: ev.Event<Object>): void {
+			actualCall.push(1);
+		}, target1);
+		
+		instance.add(function(e: ev.Event<Object>): void {
+			actualCall.push(2);
+		}, target2);
+
+		instance.purgeListeners(target1);
+
+		instance.dispatch(e);
+
+		assert.equal(actualCall.join(', '), '2');
+	});		
+
 	it('purgeDispatchers', function() {
 		var source: ed.EventDispatcher<ev.Event<Object>, Object>,
 			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
