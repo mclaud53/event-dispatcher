@@ -366,7 +366,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 
 	/**
 	 * Clears the list of listeners.
-	 * @param {Object} scope (optional; by default null)
+	 * @param {Object} scope (optional; by default null) 
 	 */
 	public purgeListeners(scope: Object = null): void
 	{
@@ -375,7 +375,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 		if (null === scope) {
 			this._listeners.length = 0;
 		} else {
-			for (i = this._listeners.length - 1; i >= 0; i++) {
+			for (i = this._listeners.length - 1; i >= 0; i--) {
 				if (this._listeners[i].scope === scope) {
 					this._listeners.splice(i, 1);
 				}
