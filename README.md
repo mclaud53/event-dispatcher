@@ -343,7 +343,7 @@ dispatcher.add(function (e) {
 
 dispatcher.purgeListeners(scope1);
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> first listener
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> second listener
 ```
 
 To proxy events from other dispatcher:
