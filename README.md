@@ -24,16 +24,247 @@ Definitions for typescript:
 
 Simple example:
 ```js
+
 var ned = require('node-event-dispatcher'),
-	event = new ned.Event('SOME_EVENT', this),
 	dispatcher = new ned.EventDispatcher();
 
+// subscribe on event "SOME_EVENT"
 dispatcher.add(function (e) {
 	console.log('event received!');
 }, this, 'SOME_EVENT');
 
-dispatcher.dispatch(event);
+// dispatch on event "SOME_EVENT"
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+```
 
+To listen several events in one listener:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log(e.type);
+}, this, ['EVENT_1', 'EVENT_2', 'EVENT_3']);
+
+dispatcher.dispatch(new ned.Event('EVENT_1', this)); // -> EVENT_1
+dispatcher.dispatch(new ned.Event('EVENT_2', this)); // -> EVENT_2
+dispatcher.dispatch(new ned.Event('EVENT_3', this)); // -> EVENT_3
+```
+
+To listen all events in one listener:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log(e.type);
+}, this);
+
+dispatcher.dispatch(new ned.Event('ANY_EVENT', this)); // -> ANY_EVENT
+```
+
+To listen all events except some:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher(),
+	listener = function (e) {
+		console.log(e.type);
+	};
+
+dispatcher.add(listener, this);
+dispatcher.remove(listener, this, ['EXCLUDED_EVENT', 'EXLUDED_EVENT_TOO']);
+
+dispatcher.dispatch(new ned.Event('ANY_EVENT', this)); // -> ANY_EVENT
+dispatcher.dispatch(new ned.Event('EXCLUDED_EVENT', this)); // -> 
+```
+
+Dispatch of cancellable event:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	e.preventDefault();
+}, this, 'SOME_EVENT');
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this, 'cancellable'));
+
+console.log(event.isDefaultPrevented); // -> true
+```
+
+Dispatch event with extra data:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log(e.options);
+}, this, 'SOME_EVENT');
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this, false, {extra: 'extra data'})); // -> { extra: 'extra data' }
+```
+
+Automatic removal of the listener after receiving the first event:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log(e.type);
+}, this, ['FIRST', 'SECOND'], {single: true});
+
+dispatcher.dispatch(new ned.Event('FIRST', this)); // -> FIRST
+dispatcher.dispatch(new ned.Event('SECOND', this)); // -> 
+```
+
+Addition of the deferred listener:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log('event received!');
+}, this, null, {delay: true});
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+console.log('event dispatched!');
+
+// -> event dispatched!
+// -> event received!
+```
+
+Addition of the delayed listener:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher(),
+	time = (new Date()).valueOf();
+
+dispatcher.add(function (e) {
+	var delay = (new Date()).valueOf() - time;
+	console.log('event received! delay: ' + delay);
+}, this, null, {delay: 100});
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+console.log('event dispatched!');
+
+// -> event dispatched!
+// -> event received! delay: 102
+```
+
+Addition of the buffered listener:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher(),
+	time = (new Date()).valueOf();
+
+dispatcher.add(function (e) {
+	var delay = (new Date()).valueOf() - time;
+	console.log('event received! delay: ' + delay);
+}, this, null, {buffer: 100});
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+setTimeout(function () {
+	dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+}, 50);
+
+// -> event received! delay: 152
+```
+
+To check whether listeners were added:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher(),
+	listener = function (e) {};
+
+console.log(dispatcher.hasListeners); // -> false
+dispatcher.add(listener, this);
+console.log(dispatcher.hasListeners); // -> true
+dispatcher.remove(listener, this);
+console.log(dispatcher.hasListeners); // -> false
+```
+
+To check there are listeners for an event:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher(),
+	listener = function (e) {};
+
+console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
+dispatcher.add(listener, this, 'SOME_EVENT');
+console.log(dispatcher.willDispatch('SOME_EVENT')); // -> true
+dispatcher.remove(listener, this, 'SOME_EVENT');
+console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
+```
+
+To suspend a dispatching of events:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log(e.type);
+}, this, ['FIRST', 'SECOND']);
+
+dispatcher.suspend('To enqueue the suspended events');
+
+dispatcher.dispatch(new ned.Event('FIRST', this)); // -> 
+
+// Warning! The cancellable events can't be suspended
+dispatcher.dispatch(new ned.Event('SECOND', this, 'cancellable')); // -> SECOND 
+
+dispatcher.resume(); // -> FIRST
+```
+
+To clear queue of the suspended events:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log(e.type);
+}, this, ['FIRST', 'SECOND']);
+
+dispatcher.suspend('To enqueue the suspended events');
+
+dispatcher.dispatch(new ned.Event('FIRST', this)); // -> 
+dispatcher.dispatch(new ned.Event('SECOND', this)); // -> 
+
+dispatcher.purgeQueue();
+
+dispatcher.resume(); // -> 
+```
+
+To remove all listeners:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log('first listener');
+}, this);
+
+dispatcher.add(function (e) {
+	console.log('second listener');
+}, this);
+
+dispatcher.purgeListeners();
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> 
+```
+
+To proxy events from other dispatcher:
+```js
+var ned = require('node-event-dispatcher'),
+	first = new ned.EventDispatcher(),
+	second = new ned.EventDispatcher();
+
+first.add(function (e) {
+	console.log('event received!');
+}, this);
+
+first.relay(second);
+
+second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
 ```
 
 ## License
