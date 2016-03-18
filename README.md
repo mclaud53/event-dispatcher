@@ -33,7 +33,7 @@ dispatcher.add(function (e) {
 	console.log('event received!');
 }, this, 'SOME_EVENT');
 
-// dispatch on event "SOME_EVENT"
+// dispatch of event
 dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
 ```
 
@@ -76,6 +76,64 @@ dispatcher.remove(listener, this, ['EXCLUDED_EVENT', 'EXLUDED_EVENT_TOO']);
 
 dispatcher.dispatch(new ned.Event('ANY_EVENT', this)); // -> ANY_EVENT
 dispatcher.dispatch(new ned.Event('EXCLUDED_EVENT', this)); // -> 
+```
+
+To add several listeners:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.addAll([
+	{
+		listener: function (e) {
+			console.log('first listener!');
+		},
+		scope: this,
+		eventType: 'FIRST_EVENT'
+	},
+	{
+		listener: function (e) {
+			console.log('second listener!');
+		},
+		scope: this,
+		eventType: 'SECOND_EVENT'
+	},
+	{
+		listener: function (e) {
+			console.log('third listener!');
+		},
+		scope: this,
+		eventType: 'THIRD_EVENT'
+	}
+]);
+
+dispatcher.dispatch(new ned.Event('FIRST_EVENT', this));  // -> first listener!
+dispatcher.dispatch(new ned.Event('SECOND_EVENT', this)); // -> second listener!
+dispatcher.dispatch(new ned.Event('THIRD_EVENT', this));  // -> second listener!
+```
+
+To set priority to the listener:
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher();
+
+dispatcher.add(function (e) {
+	console.log('listener with priority 0');
+}, this, 'SOME_EVENT');	
+
+dispatcher.add(function (e) {
+	console.log('listener with priority -100');
+}, this, 'SOME_EVENT', {priority: -100});
+
+dispatcher.add(function (e) {
+	console.log('listener with priority 100');
+}, this, 'SOME_EVENT', {priority: 100});
+
+dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+
+// -> listener with priority 100
+// -> listener with priority 0
+// -> listener with priority -100
 ```
 
 Dispatch of cancellable event:
@@ -196,6 +254,19 @@ dispatcher.remove(listener, this, 'SOME_EVENT');
 console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
 ```
 
+To check whether a listener is added
+```js
+var ned = require('node-event-dispatcher'),
+	dispatcher = new ned.EventDispatcher(),
+	listener = function (e) {};
+
+console.log(dispatcher.has(listener, this)); // -> false
+dispatcher.add(listener, this, 'SOME_EVENT');
+console.log(dispatcher.has(listener, this)); // -> true
+dispatcher.remove(listener, this, 'SOME_EVENT');
+console.log(dispatcher.has(listener, this)); // -> false
+```
+
 To suspend a dispatching of events:
 ```js
 var ned = require('node-event-dispatcher'),
@@ -205,7 +276,9 @@ dispatcher.add(function (e) {
 	console.log(e.type);
 }, this, ['FIRST', 'SECOND']);
 
+console.log(dispatcher.suspended); // -> false
 dispatcher.suspend('To enqueue the suspended events');
+console.log(dispatcher.suspended); // -> true
 
 dispatcher.dispatch(new ned.Event('FIRST', this)); // -> 
 
@@ -213,6 +286,7 @@ dispatcher.dispatch(new ned.Event('FIRST', this)); // ->
 dispatcher.dispatch(new ned.Event('SECOND', this, 'cancellable')); // -> SECOND 
 
 dispatcher.resume(); // -> FIRST
+console.log(dispatcher.suspended); // -> false
 ```
 
 To clear queue of the suspended events:
@@ -267,6 +341,56 @@ first.relay(second);
 second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
 ```
 
+To stop proxying of events from other dispatcher:
+```js
+var ned = require('node-event-dispatcher'),
+	first = new ned.EventDispatcher(),
+	second = new ned.EventDispatcher();
+
+first.add(function (e) {
+	console.log('event received!');
+}, this);
+
+first.relay(second);
+
+second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+
+first.unrelay(second);
+
+second.dispatch(new ned.Event('SOME_EVENT', this)); // ->
+```
+
+To stop proxying of events from all dispatchers:
+```js
+var ned = require('node-event-dispatcher'),
+	first = new ned.EventDispatcher(),
+	second = new ned.EventDispatcher();
+
+first.add(function (e) {
+	console.log('event received!');
+}, this);
+
+first.relay(second);
+
+second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+
+first.purgeDispatchers();
+
+second.dispatch(new ned.Event('SOME_EVENT', this)); // ->
+```
+
+To check whether events are dispatching from a dispatcher:
+```js
+var ned = require('node-event-dispatcher'),
+	first = new ned.EventDispatcher(),
+	second = new ned.EventDispatcher();
+
+console.log(first.relayed(second)); // -> false
+first.relay(second);
+console.log(first.relayed(second)); // -> true
+first.unrelayAll([second]);
+console.log(first.relayed(second)); // -> false
+```
 ## License
 
 MIT
