@@ -7,26 +7,41 @@ export class Event<T>
 {
 	/**
 	 * The type of event.
+	 *
+	 * @private
+	 * @type {string}
 	 */
 	private _type: string;
 
 	/**
 	 * The object that dispatched event.
+	 *
+	 * @private
 	 */
 	private _target: T;
 
 	/**
 	 * Indicates whether the behavior associated with the event can be prevented.
+	 *
+	 * @private
+	 * @type {boolean}
 	 */
 	private _cancellable: boolean;
 
 	/**
 	 * Indicates whether the preventDefault() method has been called on the event.
+	 *
+	 * @private
+	 * @type {boolean}
+	 * @defaultvalue
 	 */
 	private _isDefaultPrevented: boolean = false;
 
 	/**
 	 * The options of event.
+	 *
+	 * @private
+	 * @type {Object}
 	 */
 	private _options: Object;
 
