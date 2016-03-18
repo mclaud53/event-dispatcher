@@ -1,0 +1,12 @@
+grunt/
+node_modules/
+out/
+src/
+test/
+typings/
+.gitignore
+.travis.yml
+event-dispatcher.d.ts
+gruntfile.js
+npm-debug.log
+typings.json
