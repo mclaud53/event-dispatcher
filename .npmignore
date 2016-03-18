@@ -10,3 +10,4 @@ event-dispatcher.d.ts
 gruntfile.js
 npm-debug.log
 typings.json
+bower.json

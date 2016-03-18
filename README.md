@@ -6,7 +6,11 @@
 ## Install
 
  ```js
-npm i node-event-dispatcher
+npm i frog-event-dispatcher
+```
+
+```js
+bower i frog-event-dispatcher
 ```
 
 Definitions for typescript:
@@ -14,7 +18,7 @@ Definitions for typescript:
 ...
   "dependencies": {
   	...
-  	"node-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#3e4e8cc89c8d6aa010968425329dcdd25c822a9d"
+  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#3e4e8cc89c8d6aa010968425329dcdd25c822a9d"
   	...
   }
 ...
@@ -25,8 +29,8 @@ Definitions for typescript:
 Simple example:
 ```js
 
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 // subscribe on event "SOME_EVENT"
 dispatcher.add(function (e) {
@@ -34,39 +38,39 @@ dispatcher.add(function (e) {
 }, this, 'SOME_EVENT');
 
 // dispatch of event
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this)); // -> event received!
 ```
 
 To listen several events in one listener:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log(e.type);
 }, this, ['EVENT_1', 'EVENT_2', 'EVENT_3']);
 
-dispatcher.dispatch(new ned.Event('EVENT_1', this)); // -> EVENT_1
-dispatcher.dispatch(new ned.Event('EVENT_2', this)); // -> EVENT_2
-dispatcher.dispatch(new ned.Event('EVENT_3', this)); // -> EVENT_3
+dispatcher.dispatch(new fed.Event('EVENT_1', this)); // -> EVENT_1
+dispatcher.dispatch(new fed.Event('EVENT_2', this)); // -> EVENT_2
+dispatcher.dispatch(new fed.Event('EVENT_3', this)); // -> EVENT_3
 ```
 
 To listen all events in one listener:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log(e.type);
 }, this);
 
-dispatcher.dispatch(new ned.Event('ANY_EVENT', this)); // -> ANY_EVENT
+dispatcher.dispatch(new fed.Event('ANY_EVENT', this)); // -> ANY_EVENT
 ```
 
 To listen all events except some:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher(),
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
 	listener = function (e) {
 		console.log(e.type);
 	};
@@ -74,14 +78,14 @@ var ned = require('node-event-dispatcher'),
 dispatcher.add(listener, this);
 dispatcher.remove(listener, this, ['EXCLUDED_EVENT', 'EXLUDED_EVENT_TOO']);
 
-dispatcher.dispatch(new ned.Event('ANY_EVENT', this)); // -> ANY_EVENT
-dispatcher.dispatch(new ned.Event('EXCLUDED_EVENT', this)); // -> 
+dispatcher.dispatch(new fed.Event('ANY_EVENT', this)); // -> ANY_EVENT
+dispatcher.dispatch(new fed.Event('EXCLUDED_EVENT', this)); // -> 
 ```
 
 To add several listeners:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.addAll([
 	{
@@ -107,15 +111,15 @@ dispatcher.addAll([
 	}
 ]);
 
-dispatcher.dispatch(new ned.Event('FIRST_EVENT', this));  // -> first listener!
-dispatcher.dispatch(new ned.Event('SECOND_EVENT', this)); // -> second listener!
-dispatcher.dispatch(new ned.Event('THIRD_EVENT', this));  // -> second listener!
+dispatcher.dispatch(new fed.Event('FIRST_EVENT', this));  // -> first listener!
+dispatcher.dispatch(new fed.Event('SECOND_EVENT', this)); // -> second listener!
+dispatcher.dispatch(new fed.Event('THIRD_EVENT', this));  // -> second listener!
 ```
 
 To set priority to the listener:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log('listener with priority 0');
@@ -129,7 +133,7 @@ dispatcher.add(function (e) {
 	console.log('listener with priority 100');
 }, this, 'SOME_EVENT', {priority: 100});
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this));
 
 // -> listener with priority 100
 // -> listener with priority 0
@@ -138,53 +142,53 @@ dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
 
 Dispatch of cancellable event:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	e.preventDefault();
 }, this, 'SOME_EVENT');
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this, 'cancellable'));
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this, 'cancellable'));
 
 console.log(event.isDefaultPrevented); // -> true
 ```
 
 Dispatch event with extra data:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log(e.options);
 }, this, 'SOME_EVENT');
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this, false, {extra: 'extra data'})); // -> { extra: 'extra data' }
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this, false, {extra: 'extra data'})); // -> { extra: 'extra data' }
 ```
 
 Automatic removal of the listener after receiving the first event:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log(e.type);
 }, this, ['FIRST', 'SECOND'], {single: true});
 
-dispatcher.dispatch(new ned.Event('FIRST', this)); // -> FIRST
-dispatcher.dispatch(new ned.Event('SECOND', this)); // -> 
+dispatcher.dispatch(new fed.Event('FIRST', this)); // -> FIRST
+dispatcher.dispatch(new fed.Event('SECOND', this)); // -> 
 ```
 
 Addition of the deferred listener:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log('event received!');
 }, this, null, {delay: true});
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this));
 console.log('event dispatched!');
 
 // -> event dispatched!
@@ -193,8 +197,8 @@ console.log('event dispatched!');
 
 Addition of the delayed listener:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher(),
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
 	time = (new Date()).valueOf();
 
 dispatcher.add(function (e) {
@@ -202,7 +206,7 @@ dispatcher.add(function (e) {
 	console.log('event received! delay: ' + delay);
 }, this, null, {delay: 100});
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this));
 console.log('event dispatched!');
 
 // -> event dispatched!
@@ -211,8 +215,8 @@ console.log('event dispatched!');
 
 Addition of the buffered listener:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher(),
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
 	time = (new Date()).valueOf();
 
 dispatcher.add(function (e) {
@@ -220,9 +224,9 @@ dispatcher.add(function (e) {
 	console.log('event received! delay: ' + delay);
 }, this, null, {buffer: 100});
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this));
 setTimeout(function () {
-	dispatcher.dispatch(new ned.Event('SOME_EVENT', this));
+	dispatcher.dispatch(new fed.Event('SOME_EVENT', this));
 }, 50);
 
 // -> event received! delay: 152
@@ -230,8 +234,8 @@ setTimeout(function () {
 
 To check whether listeners were added:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher(),
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
 	listener = function (e) {};
 
 console.log(dispatcher.hasListeners); // -> false
@@ -243,8 +247,8 @@ console.log(dispatcher.hasListeners); // -> false
 
 To check there are listeners for an event:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher(),
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
 	listener = function (e) {};
 
 console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
@@ -256,8 +260,8 @@ console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
 
 To check whether a listener is added
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher(),
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
 	listener = function (e) {};
 
 console.log(dispatcher.has(listener, this)); // -> false
@@ -269,8 +273,8 @@ console.log(dispatcher.has(listener, this)); // -> false
 
 To suspend a dispatching of events:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log(e.type);
@@ -280,10 +284,10 @@ console.log(dispatcher.suspended); // -> false
 dispatcher.suspend('To enqueue the suspended events');
 console.log(dispatcher.suspended); // -> true
 
-dispatcher.dispatch(new ned.Event('FIRST', this)); // -> 
+dispatcher.dispatch(new fed.Event('FIRST', this)); // -> 
 
 // Warning! The cancellable events can't be suspended
-dispatcher.dispatch(new ned.Event('SECOND', this, 'cancellable')); // -> SECOND 
+dispatcher.dispatch(new fed.Event('SECOND', this, 'cancellable')); // -> SECOND 
 
 dispatcher.resume(); // -> FIRST
 console.log(dispatcher.suspended); // -> false
@@ -291,8 +295,8 @@ console.log(dispatcher.suspended); // -> false
 
 To clear queue of the suspended events:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log(e.type);
@@ -300,8 +304,8 @@ dispatcher.add(function (e) {
 
 dispatcher.suspend('To enqueue the suspended events');
 
-dispatcher.dispatch(new ned.Event('FIRST', this)); // -> 
-dispatcher.dispatch(new ned.Event('SECOND', this)); // -> 
+dispatcher.dispatch(new fed.Event('FIRST', this)); // -> 
+dispatcher.dispatch(new fed.Event('SECOND', this)); // -> 
 
 dispatcher.purgeQueue();
 
@@ -310,8 +314,8 @@ dispatcher.resume(); // ->
 
 To remove all listeners:
 ```js
-var ned = require('node-event-dispatcher'),
-	dispatcher = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log('first listener');
@@ -323,15 +327,15 @@ dispatcher.add(function (e) {
 
 dispatcher.purgeListeners();
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> 
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this)); // -> 
 ```
 
 To remove all listeners by scope:
 ```js
-var ned = require('node-event-dispatcher'),
+var fed = require('frog-event-dispatcher'),
 	scope1 = {},
 	scope2 = {},
-	dispatcher = new ned.EventDispatcher();
+	dispatcher = new fed.EventDispatcher();
 
 dispatcher.add(function (e) {
 	console.log('first listener');
@@ -343,14 +347,14 @@ dispatcher.add(function (e) {
 
 dispatcher.purgeListeners(scope1);
 
-dispatcher.dispatch(new ned.Event('SOME_EVENT', this)); // -> second listener
+dispatcher.dispatch(new fed.Event('SOME_EVENT', this)); // -> second listener
 ```
 
 To proxy events from other dispatcher:
 ```js
-var ned = require('node-event-dispatcher'),
-	first = new ned.EventDispatcher(),
-	second = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	first = new fed.EventDispatcher(),
+	second = new fed.EventDispatcher();
 
 first.add(function (e) {
 	console.log('event received!');
@@ -358,14 +362,14 @@ first.add(function (e) {
 
 first.relay(second);
 
-second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+second.dispatch(new fed.Event('SOME_EVENT', this)); // -> event received!
 ```
 
 To stop proxying of events from other dispatcher:
 ```js
-var ned = require('node-event-dispatcher'),
-	first = new ned.EventDispatcher(),
-	second = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	first = new fed.EventDispatcher(),
+	second = new fed.EventDispatcher();
 
 first.add(function (e) {
 	console.log('event received!');
@@ -373,18 +377,18 @@ first.add(function (e) {
 
 first.relay(second);
 
-second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+second.dispatch(new fed.Event('SOME_EVENT', this)); // -> event received!
 
 first.unrelay(second);
 
-second.dispatch(new ned.Event('SOME_EVENT', this)); // ->
+second.dispatch(new fed.Event('SOME_EVENT', this)); // ->
 ```
 
 To stop proxying of events from all dispatchers:
 ```js
-var ned = require('node-event-dispatcher'),
-	first = new ned.EventDispatcher(),
-	second = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	first = new fed.EventDispatcher(),
+	second = new fed.EventDispatcher();
 
 first.add(function (e) {
 	console.log('event received!');
@@ -392,18 +396,18 @@ first.add(function (e) {
 
 first.relay(second);
 
-second.dispatch(new ned.Event('SOME_EVENT', this)); // -> event received!
+second.dispatch(new fed.Event('SOME_EVENT', this)); // -> event received!
 
 first.purgeDispatchers();
 
-second.dispatch(new ned.Event('SOME_EVENT', this)); // ->
+second.dispatch(new fed.Event('SOME_EVENT', this)); // ->
 ```
 
 To check whether events are dispatching from a dispatcher:
 ```js
-var ned = require('node-event-dispatcher'),
-	first = new ned.EventDispatcher(),
-	second = new ned.EventDispatcher();
+var fed = require('frog-event-dispatcher'),
+	first = new fed.EventDispatcher(),
+	second = new fed.EventDispatcher();
 
 console.log(first.relayed(second)); // -> false
 first.relay(second);
