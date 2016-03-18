@@ -327,7 +327,7 @@ declare class EventDispatcher<E extends Event<T>, T> {
     /**
      * Clears the list of listeners.
      */
-    purgeListeners(): void;
+    purgeListeners(scope?: Object): void;
     /**
      * Clears the list of listened dispatchers.
      */
