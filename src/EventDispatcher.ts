@@ -374,7 +374,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 
 		if (null === scope) {
 			this._listeners.length = 0;
-		} else {
+		} else if (this._listeners.length > 0) {
 			for (i = this._listeners.length - 1; i >= 0; i--) {
 				if (this._listeners[i].scope === scope) {
 					this._listeners.splice(i, 1);
