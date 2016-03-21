@@ -2,6 +2,13 @@ import ev = require('./Event');
 import ls = require('./Listener');
 import lo = require('./ListenerOptions');
 
+type EventTypeDiff = {
+	add: string[],
+	addAll: boolean,
+	del: string[],
+	delAll: boolean
+};
+
 /**
  * The dispatcher of events.
  *
@@ -16,6 +23,18 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	private _listeners: ListenerHelper<E, T>[] = [];
 
 	/**
+	 * The lst of listeners that listen all events.
+	 */
+	private _listenersAll: ListenerHelper<E, T>[] = [];
+
+	/**
+	 * The mapping of type of event to the list of listeners.
+	 */
+	private _listenersMap: {
+		[key: string]: ListenerHelper<E, T>[]
+	} = {};
+
+	/**
 	 * Indicates whether listeners are sorted.
 	 */
 	private _listenersSorted: boolean = true;
@@ -27,7 +46,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 
 	/**
 	 * Event suspend count.
-	 */	
+	 */
 	private _suspendCount: number = 0;
 
 	/**
@@ -39,6 +58,20 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * The queue of suspended events.
 	 */
 	private _queue: E[] = [];
+
+	/**
+	 * The separator between different deep of type of event.
+	 */
+	private _separator: string = ':';
+
+	/**
+	 * @constructor
+	 * @param {string} separator (By default: ':')
+	 */
+	public construct(separator: string = ':')
+	{
+		this._separator = separator;
+	}
 
 	/**
 	 * Indicates whether listeners of events has been added.
@@ -62,42 +95,27 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 *
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
-	 * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will be listened by listener.
-	 * 	The list of valid values:
-	 *		null         				 - Listens all types of events (by default)
-	 *		'eventType'  				 - Listens only events that has type 'eventType'
-	 *		['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
+	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public add(listener: { (event: E): void }, scope: Object, eventType: (string | string[]) = null, options: lo.ListenerOptions = null): void
+	public add(listener: { (event: E): void }, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
 	{
 		var i: number,
-			l: ListenerHelper<E, T> = null,
-			priority: number;
+			l: ListenerHelper<E, T>,
+			eventTypes: string[] = this._transform(eventType),
+			diff: EventTypeDiff;
 
 		for (i = 0; i < this._listeners.length; i++) {
 			if ((this._listeners[i].listener === listener) && (this._listeners[i].scope === scope)) {
-				l = this._listeners[i];
-				break;
+				this._listeners[i].options = options;
+				diff = this._listeners[i].allowEventType(eventTypes);
+				this._applyEventDiff(this._listeners[i], diff);
+				return;
 			}
 		}
 
-		if (null === l) {
-			l = new ListenerHelper<E, T>(listener, scope, eventType, options);
-			if (this._listeners.length > 0) {
-				if (this._listeners[0].priority < l.priority) {
-					this._listenersSorted = false;
-				}
-			}
-			this._listeners.unshift(l);
-		} else {
-			l.allowEventType(eventType);
-			priority = l.priority;
-			l.options = options;
-			if (priority !== l.priority) {
-				this._listenersSorted = false;
-			}
-		}
+		l = new ListenerHelper<E, T>(listener, scope, eventTypes, options);
+		this._addListener(l, l.eventTypes);
 	}
 
 	/**
@@ -118,11 +136,14 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	/**
 	 * Sends event to listeners.
 	 * 
-	 * @param {E} event Event for dispatching.
+	 * @param {Event} event Event for dispatching.
 	 */
 	public dispatch(event: E): void
 	{
 		var i: number,
+			index: number,
+			eventTypes: string[],
+			listeners: ListenerHelper<E, T>[],
 			me: EventDispatcher<E, T> = this;
 
 		if (this.suspended && !event.cancellable) {
@@ -132,23 +153,29 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 			return;
 		}
 
-		if (!this._listenersSorted) {
-			this._sortListeners();
+		eventTypes = this._transform(event.type);
+		listeners = this._eventType2Listener(eventTypes);
+
+		listeners.sort(function(a: ListenerHelper<E, T>, b: ListenerHelper<E, T>): number {
+			if (a.priority === b.priority) {
+				return b.order - a.order;
+			}
+			return a.priority - b.priority;
+		});
+
+		if (0 === listeners.length) {
+			return;
 		}
 
-		for (i = this._listeners.length - 1; i >= 0; i--) {
-			this._listeners[i].dispatch(event);
-			if (this._listeners[i].single) {
-				if (this._listeners[i].buffer) {
-					this._listeners[i].onDispatch = function (l: ListenerHelper<E, T>, e: E) {
-						var index: number = me._listeners.indexOf(l);
-						l.onDispatch = null;
-						if (index > -1) {
-							me._listeners.splice(index, 1);
-						}
+		for (i = listeners.length - 1; i >= 0; i--) {
+			listeners[i].dispatch(event, eventTypes);
+			if (listeners[i].single) {
+				if (listeners[i].buffer) {
+					listeners[i].onDispatch = function(l: ListenerHelper<E, T>, e: E) {
+						me._removeListener(l, l.eventTypes);
 					}
 				} else {
-					this._listeners.splice(i, 1);
+					this._removeListener(listeners[i], listeners[i].eventTypes);
 				}
 			}
 		}
@@ -179,28 +206,27 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 *
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
-	 * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
-	 * 	The list of valid values:
-	 *		null         				 - Removes listener (by default)
-	 *		'eventType'  				 - Stops listening of events that has type 'eventType'.
-	 *									   If the listener has no other types of events, then listener will be deleted.
-	 *		['eventType1', 'eventType2'] - Stops listening of events that has types 'eventType1' or 'eventType2'.
-	 *									   If the listener has no other types of events, then listener will be deleted.
+	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
 	 */
-	public remove(listener: { (event: E): void }, scope: Object, eventType: (string | string[]) = null): void
+	public remove(listener: { (event: E): void }, scope: Object, eventType: ev.EventType = null): void
 	{
 		var i: number,
-			l: ListenerHelper<E, T> = null;
+			index: number,
+			eventTypes: string[] = this._transform(eventType),
+			l: ListenerHelper<E, T> = null,
+			diff: EventTypeDiff;
 
 		for (i = this._listeners.length - 1; i >= 0; i++) {
 			l = this._listeners[i];
 			if ((l.listener === listener) && (l.scope === scope)) {
-				if (null === eventType) {
-					this._listeners.splice(i, 1);
+				if (null === eventTypes) {
+					this._removeListener(l, l.eventTypes);
 				} else {
-					l.denyEventType(eventType);
-					if (!l.hasEventTypes) {
-						this._listeners.splice(i, 1);
+					diff = l.denyEventType(eventTypes);
+					if (l.hasEventTypes) {
+						this._applyEventDiff(this._listeners[i], diff);
+					} else {
+						this._removeListener(l, l.eventTypes);
 					}
 				}
 				break;
@@ -263,14 +289,10 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * Subscribes on events of the dispatcher.
 	 *
 	 * @param {EventDispatcher} dispatcher Listened dispatcher.
-	 * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will be listened by listener.
-	 * 	The list of valid values:
-	 *		null         				 - Listens all types of events (by default)
-	 *		'eventType'  				 - Listens only events that has type 'eventType'
-	 *		['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
+	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public relay(dispatcher: EventDispatcher<E, T>, eventType: (string | string[]) = null, options: lo.ListenerOptions = null): void
+	public relay(dispatcher: EventDispatcher<E, T>, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
 	{
 		if (this.relayed(dispatcher)) {
 			return;
@@ -284,14 +306,10 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * Subscribes on events of the list of dispatchers.
 	 *
 	 * @param {EventDispatcher} dispatcher The list of listened dispatchers.
-	 * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will be listened by listener.
-	 * 	The list of valid values:
-	 *		null         				 - Listens all types of events (by default)
-	 *		'eventType'  				 - Listens only events that has type 'eventType'
-	 *		['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
+	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public relayAll(dispatchers: EventDispatcher<E, T>[], eventType: (string | string[]) = null, options: lo.ListenerOptions = null): void
+	public relayAll(dispatchers: EventDispatcher<E, T>[], eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
 	{
 		var i: number;
 		for (i = 0; i < dispatchers.length; i++) {
@@ -314,15 +332,9 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * Unsubscribes from events of the dispatcher.
 	 *
 	 * @param {EventDispatcher} dispatcher Listened dispatcher.
-	 * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will not be listening.
-	 * 	The list of valid values:
-	 *		null         				 - Stops listening all events of dispatcher (by default)
-	 *		'eventType'  				 - Stops listening of events that has type 'eventType'.
-	 *									   If the listener has no other types of events, then listener will be deleted.
-	 *		['eventType1', 'eventType2'] - Stops listening of events that has types 'eventType1' or 'eventType2'.
-	 *									   If the listener has no other types of events, then listener will be deleted.
+	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening.
 	 */
-	public unrelay(dispatcher: EventDispatcher<E, T>, eventType: (string | string[]) = null): void
+	public unrelay(dispatcher: EventDispatcher<E, T>, eventType: ev.EventType = null): void
 	{
 		var index: number = this._dispatchers.indexOf(dispatcher);
 
@@ -338,15 +350,9 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * Unsubscribes on events of the list of dispatchers.
 	 *
 	 * @param {EventDispatcher} dispatcher The list of listened dispatchers.
-	 * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will not be listening.
-	 * 	The list of valid values:
-	 *		null         				 - Stops listening all events of dispatcher (by default)
-	 *		'eventType'  				 - Stops listening of events that has type 'eventType'.
-	 *									   If the listener has no other types of events, then listener will be deleted.
-	 *		['eventType1', 'eventType2'] - Stops listening of events that has types 'eventType1' or 'eventType2'.
-	 *									   If the listener has no other types of events, then listener will be deleted.
+	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening.
 	 */
-	public unrelayAll(dispatchers: EventDispatcher<E, T>[], eventType: (string | string[]) = null): void
+	public unrelayAll(dispatchers: EventDispatcher<E, T>[], eventType: ev.EventType = null): void
 	{
 		var i: number;
 		for (i = 0; i < dispatchers.length; i++) {
@@ -370,14 +376,17 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 */
 	public purgeListeners(scope: Object = null): void
 	{
-		var i: number;
+		var i: number,
+			index: number;
 
 		if (null === scope) {
 			this._listeners.length = 0;
+			this._listenersAll.length = 0;
+			this._listenersMap = {};
 		} else if (this._listeners.length > 0) {
 			for (i = this._listeners.length - 1; i >= 0; i--) {
 				if (this._listeners[i].scope === scope) {
-					this._listeners.splice(i, 1);
+					this._removeListener(this._listeners[i], this._listeners[i].eventTypes);
 				}
 			}
 		}
@@ -406,23 +415,32 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	/**
 	 * Checks whether exist at least one listener for current type of the event.
 	 *
-	 * @param {string} eventType The type of event.
+	 * @param {EventType} eventType The type of event.
 	 * @return {boolean}
 	 */
-	public willDispatch(eventType: string): boolean
+	public willDispatch(eventType: ev.EventType): boolean
 	{
-		var i: number;
+		var i: number,
+			eventTypes: string[],
+			listeners: ListenerHelper<E, T>[];
 
+		if (null === eventType || (eventType instanceof Array && 0 === eventType.length)) {
+			throw new Error('EventType can\'t be null or empty array');
+		}
+		
 		if (!this.hasListeners) {
 			return false;
 		}
 
-		for (i = 0; i < this._listeners.length; i++) {
-			if (this._listeners[i].willDispatch(eventType)) {
+		eventTypes = this._transform(eventType);
+
+		listeners = this._eventType2Listener(eventTypes);
+
+		for (i = 0; i < listeners.length; i++) {
+			if (listeners[i].willDispatch(eventTypes)) {
 				return true;
 			}
 		}
-
 
 		return false;
 	}
@@ -439,15 +457,172 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
-	 * Orders list of listeners by priority.
+	 * Transforms EventType to array of types of events.
+	 *
+	 * @private
+	 * @param {EventType} eventType
+	 * @return {Array|null}
 	 */
-	private _sortListeners(): void
+	private _transform(eventType: ev.EventType): string[]
 	{
-		this._listeners.sort(function(a: ListenerHelper<E, T>, b: ListenerHelper<E, T>): number {
-			return a.priority - b.priority;
-		});
+		var i: number,
+			j: number,
+			k: string,
+			key: string,
+			keys: string[],
+			arr: string[],
+			ret: string[];
 
-		this._listenersSorted = true;
+		if (null === eventType) {
+			return null;
+		} else if (typeof (eventType) === 'string') {
+			key = eventType.toString();
+			ret = [key];
+		} else if (eventType instanceof Array) {
+			ret = [];
+			for (i = 0; i < eventType.length; i++) {
+				arr = this._transform(eventType[i]);
+				for (j = 0; j < arr.length; j++) {
+					if (ret.indexOf(arr[j]) === -1) {
+						ret.push(arr[j]);
+					}
+				}
+			}
+		} else if (eventType instanceof Object) {
+			ret = [];
+			keys = Object.keys(eventType);
+			for (i = 0; i < keys.length; i++) {
+				key = keys[i];
+				arr = this._transform(eventType[key]);
+				for (j = 0; j < arr.length; j++) {
+					k = key + this._separator + arr[j];
+					if (ret.indexOf(k) === -1) {
+						ret.push(k);
+					}
+				}
+			}
+		}
+		return ret.sort();
+	}
+
+	/**
+	 * Returns array of listeners by array of types of events/
+	 * 
+	 * @private
+	 * @param {Array|null} eventTypes
+	 * @returns {Array}
+	 */
+	private _eventType2Listener(eventTypes: string[]): ListenerHelper<E, T>[]
+	{
+		var i: number,
+			j: number,
+			eventType: string,
+			arr: ListenerHelper<E, T>[],
+			ret: ListenerHelper<E, T>[] = this._listenersAll.slice();
+
+		if (null === eventTypes) {
+			return ret;
+		}
+
+		for (i = 0; i < eventTypes.length; i++) {
+			eventType = eventTypes[i];
+			if (!this._listenersMap.hasOwnProperty(eventType)) {
+				continue;
+			}
+			arr = this._listenersMap[eventType];
+			for (j = 0; j < arr.length; j++) {
+				if (ret.indexOf(arr[j]) === -1) {
+					ret.push(arr[j]);
+				}
+			}
+		}
+
+		return ret;
+	}
+
+	/**
+	 * Updates mapping of event type to listeners by EventTypeDiff.
+	 *
+	 * @private
+	 * @param {ListenerHelper<E, T>} listener
+	 * @param {EventTypeDiff} diff
+	 */
+	private _applyEventDiff(listener: ListenerHelper<E, T>, diff: EventTypeDiff): void
+	{
+		if (diff.add.length) {
+			this._addListener(listener, diff.add, false);
+		}
+		if (diff.addAll) {
+			this._addListener(listener, null, false);
+		}
+		if (diff.del.length) {
+			this._removeListener(listener, diff.del, false);
+		}
+		if (diff.delAll) {
+			this._removeListener(listener, null, false);
+		}
+	}
+
+	private _addListener(listener: ListenerHelper<E, T>, eventTypes: string[], global: boolean = true): void
+	{
+		var i: number,
+			eventType: string;
+
+		if (global) {
+			if (this._listeners.indexOf(listener) === -1) {
+				this._listeners.push(listener);
+			}
+		}
+
+		if (null === eventTypes) {
+			if (this._listenersAll.indexOf(listener) === -1) {
+				this._listenersAll.push(listener);
+			}
+			return;
+		}
+
+		for (i = 0; i < eventTypes.length; i++) {
+			eventType = eventTypes[i];
+			if (this._listenersMap.hasOwnProperty(eventType)) {
+				if (this._listenersMap[eventType].indexOf(listener) === -1) {
+					this._listenersMap[eventType].push(listener);
+				}
+			} else {
+				this._listenersMap[eventType] = [listener];
+			}
+		}
+	}
+
+	private _removeListener(listener: ListenerHelper<E, T>, eventTypes: string[], global: boolean = true): void
+	{
+		var i: number,
+			index: number,
+			eventType: string;
+
+		if (global) {
+			index = this._listeners.indexOf(listener);
+			if (index > -1) {
+				this._listeners.splice(index, 1);
+			}
+		}
+
+		if (null === eventTypes) {
+			index = this._listenersAll.indexOf(listener);
+			if (index > -1) {
+				this._listenersAll.splice(index, 1);
+			}
+			return;
+		}
+
+		for (i = 0; i < eventTypes.length; i++) {
+			eventType = eventTypes[i];
+			if (this._listenersMap.hasOwnProperty(eventType)) {
+				index = this._listenersMap[eventType].indexOf(listener);
+				if (index > -1) {
+					this._listenersMap[eventType].splice(index, 1);
+				}
+			}
+		}
 	}
 }
 
@@ -459,6 +634,8 @@ export class EventDispatcher<E extends ev.Event<T>, T>
  */
 class ListenerHelper<E extends ev.Event<T>, T>
 {
+	private static _orderGen: number = 0;
+
 	/**
 	 * The listener of the events.
 	 */
@@ -481,6 +658,8 @@ class ListenerHelper<E extends ev.Event<T>, T>
 
 	private _timeout: Object = null;
 
+	private _order: number;
+
 	/**
 	 * Callback. Triggered after event has been dispatched.
 	 */
@@ -491,19 +670,26 @@ class ListenerHelper<E extends ev.Event<T>, T>
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 */
-	public constructor(listener: { (event: E): void }, scope: Object, eventType: (string | string[]), options: lo.ListenerOptions)
+	public constructor(listener: { (event: E): void }, scope: Object, eventTypes: string[], options: lo.ListenerOptions)
 	{
+		this._order = ++ListenerHelper._orderGen;
 		this._listener = listener;
 		this._scope = scope;
-		if (eventType instanceof Array) {
-			this._listOfAllowTypes = eventType;
-		} else if (null !== eventType) {
-			this._listOfAllowTypes = [eventType];
-		}
+		this._listOfAllowTypes = eventTypes;
 		this.options = options;
 		if (this.buffer) {
 			this._timeout = {};
 		}
+	}
+
+	public get order(): number
+	{
+		return this._order;
+	}
+
+	public get eventTypes(): string[]
+	{
+		return this._listOfAllowTypes;
 	}
 
 	public get hasEventTypes(): boolean
@@ -589,106 +775,109 @@ class ListenerHelper<E extends ev.Event<T>, T>
 		}
 	}
 
-	public allowEventType(eventType: (string | string[])): void
+	public allowEventType(eventTypes: string[]): EventTypeDiff
 	{
 		var i: number,
-			index: number;
+			index: number,
+			ret: EventTypeDiff = {
+				add: [],
+				addAll: false,
+				del: [],
+				delAll: false
+			};
 
-		if (null === eventType) {
-			this._listOfAllowTypes = null;
-			if (this._listOfDenyTypes instanceof Array) {
-				this._listOfDenyTypes.length = 0;
-			}
-			return;
-		}
+		ret.add.length = 0;
+		ret.addAll = false;
+		ret.del.length = 0;
+		ret.delAll = false;
 
 		if (null === this._listOfAllowTypes) {
 			if (null === this._listOfDenyTypes || 0 === this._listOfDenyTypes.length) {
-				return;
+				return ret;
 			}
 
-			if (eventType instanceof Array) {
-				for (i = 0; i < eventType.length; i++) {
-					index = this._listOfDenyTypes.indexOf(eventType[i]);
+			if (null === eventTypes) {
+				this._listOfDenyTypes.length = 0;
+			} else {
+				for (i = 0; i < eventTypes.length; i++) {
+					index = this._listOfDenyTypes.indexOf(eventTypes[i]);
 					if (index > -1) {
 						this._listOfDenyTypes.splice(index, 1);
 					}
 				}
-			} else {
-				index = this._listOfDenyTypes.indexOf(eventType);
-				if (index > -1) {
-					this._listOfDenyTypes.splice(index, 1);
-				}
 			}
 		} else {
-			if (eventType instanceof Array) {
-				for (i = 0; i < eventType.length; i++) {
-					index = this._listOfAllowTypes.indexOf(eventType[i]);
-					if (-1 === index) {
-						this._listOfAllowTypes.push(eventType[i]);
-					}
-				}
+			if (null === eventTypes) {
+				ret.addAll = true;
+				ret.del = this._listOfAllowTypes;
+				this._listOfAllowTypes = null;
 			} else {
-				index = this._listOfAllowTypes.indexOf(eventType);
-				if (-1 === index) {
-					this._listOfAllowTypes.push(eventType);
+				for (i = 0; i < eventTypes.length; i++) {
+					index = this._listOfAllowTypes.indexOf(eventTypes[i]);
+					if (-1 === index) {
+						this._listOfAllowTypes.push(eventTypes[i]);
+						ret.add.push(eventTypes[i]);
+					}
 				}
 			}
 		}
+
+		return ret;
 	}
 
-	public denyEventType(eventType: (string | string[])): void
+	public denyEventType(eventTypes: string[]): EventTypeDiff
 	{
 		var i: number,
-			index: number;
+			index: number,
+			index: number,
+			ret: EventTypeDiff = {
+				add: [],
+				addAll: false,
+				del: [],
+				delAll: false
+			};
+
+		ret.add.length = 0;
+		ret.addAll = false;
+		ret.del.length = 0;
+		ret.delAll = false;
 
 		if (null === this._listOfAllowTypes) {
 			if (null === this._listOfDenyTypes) {
 				this._listOfDenyTypes = [];
 			}
 
-			if (eventType instanceof Array) {
-				for (i = 0; i < eventType.length; i++) {
-					index = this._listOfDenyTypes.indexOf(eventType[i]);
-					if (-1 === index) {
-						this._listOfDenyTypes.push(eventType[i]);
-					}
-				}
-			} else {
-				index = this._listOfDenyTypes.indexOf(eventType);
+			for (i = 0; i < eventTypes.length; i++) {
+				index = this._listOfDenyTypes.indexOf(eventTypes[i]);
 				if (-1 === index) {
-					this._listOfDenyTypes.push(eventType);
+					this._listOfDenyTypes.push(eventTypes[i]);
 				}
 			}
 		} else {
-			if (eventType instanceof Array) {
-				for (i = 0; i < eventType.length; i++) {
-					index = this._listOfAllowTypes.indexOf(eventType[i]);
-					if (index > -1) {
-						this._listOfAllowTypes.splice(index, 1);
-					}
-				}
-			} else {
-				index = this._listOfAllowTypes.indexOf(eventType);
+			for (i = 0; i < eventTypes.length; i++) {
+				index = this._listOfAllowTypes.indexOf(eventTypes[i]);
 				if (index > -1) {
 					this._listOfAllowTypes.splice(index, 1);
+					ret.del.push(eventTypes[i]);
 				}
 			}
 		}
+
+		return ret;
 	}
 
 	/**
 	 * Sends event to listeners.
 	 */
-	public dispatch(event: E): void
+	public dispatch(event: E, eventTypes: string[]): void
 	{
-		if (!this.willDispatch(event.type)) {
+		if (!this.willDispatch(eventTypes)) {
 			return;
 		}
 
 		switch (true) {
 			case !!this.buffer:
-				this._dispatchBuffered(event);
+				this._dispatchBuffered(event, eventTypes);
 				break;
 
 			case !!this.delay:
@@ -708,34 +897,51 @@ class ListenerHelper<E extends ev.Event<T>, T>
 	/**
 	 * Checks whether exist at least one listener for current type of the event.
 	 *
-	 * @param {string} eventType The type of event.
+	 * @param {Array} eventTypes The list of types of events.
 	 * @return {boolean}
 	 */
-	public willDispatch(eventType: string): boolean
+	public willDispatch(eventTypes: string[]): boolean
 	{
+		var i: number,
+			eventType: string;
+
 		if (null === this._listOfAllowTypes) {
 			if (null === this._listOfDenyTypes || 0 === this._listOfDenyTypes.length) {
 				return true;
 			} else {
-				return this._listOfDenyTypes.indexOf(eventType) === -1;
+				for (i = 0; i < eventTypes.length; i++) {
+					eventType = eventTypes[i];
+					if (this._listOfDenyTypes.indexOf(eventType) === -1) {
+						return true;
+					}
+				}
+			}
+		} else {
+			for (i = 0; i < eventTypes.length; i++) {
+				eventType = eventTypes[i];
+				if (this._listOfAllowTypes.indexOf(eventType) > -1) {
+					return true;
+				}
 			}
 		}
-		return this._listOfAllowTypes.indexOf(eventType) > -1;
+
+		return false;
 	}
 
 	/**
 	 * Sends buffered event to listeners.
 	 */
-	private _dispatchBuffered(event: E): void
+	private _dispatchBuffered(event: E, eventTypes: string[]): void
 	{
-		var me = this;
+		var me = this,
+			hash: string = eventTypes.join(',');
 
-		if (this._timeout.hasOwnProperty(event.type)) {
-			clearTimeout(this._timeout[event.type]);
+		if (this._timeout.hasOwnProperty(hash)) {
+			clearTimeout(this._timeout[hash]);
 		}
 
-		this._timeout[event.type] = setTimeout(function() {
-			delete me._timeout[event.type];
+		this._timeout[hash] = setTimeout(function() {
+			delete me._timeout[hash];
 			me._dispatch(event);
 		}, this.buffer);
 	}

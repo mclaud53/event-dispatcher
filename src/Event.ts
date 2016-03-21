@@ -1,3 +1,5 @@
+export type EventType = string | string[] | Object | Object[];
+
 /**
  * The base event class.
  *
@@ -11,7 +13,7 @@ export class Event<T>
 	 * @private
 	 * @type {string}
 	 */
-	private _type: string;
+	private _type: EventType;
 
 	/**
 	 * The object that dispatched event.
@@ -52,7 +54,7 @@ export class Event<T>
 	 * @param {boolean} cancellable Indicates whether the behavior associated with the event can be prevented.
 	 * @param {Object} options (optional) The options of event.
 	 */
-	public constructor(type: string, target: T, cancellable: boolean, options: Object = {})
+	public constructor(type: EventType, target: T, cancellable: boolean, options: Object = {})
 	{
 		this._type = type;
 		this._target = target;
@@ -63,7 +65,7 @@ export class Event<T>
 	/**
 	 * The type of event.
 	 */
-	public get type(): string
+	public get type(): EventType
 	{
 		return this._type;
 	}

@@ -5,6 +5,7 @@ src/
 test/
 typings/
 .gitignore
+.npmignore
 .travis.yml
 event-dispatcher.d.ts
 gruntfile.js
