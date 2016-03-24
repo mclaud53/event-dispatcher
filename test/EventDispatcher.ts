@@ -753,5 +753,116 @@ describe('EventDispatcher', function() {
 		assert.equal(actualCallCounter, 1, 'The listener must be executed only once');
 
 		clock.restore();
-	});	
+	});
+
+	// release 1.2.0
+
+	it('(private) transform of type of event for listener', function () {
+		var actual: string[],
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		actual = instance['_transform'](null);
+		assert.equal(actual, null, 'For "null" value must returns null');
+
+		actual = instance['_transform']('*');
+		assert.equal(actual.join(', '), '*', 'For "*" value must returns [*]');
+
+		actual = instance['_transform']('eventType');
+		assert.equal(actual.join(', '), 'eventType', 'For "eventType" value must returns [eventType]');
+
+		actual = instance['_transform'](['a', 'b']);
+		assert.equal(actual.join(', '), 'a, b', 'For "[a, b]" value must returns [a, b]');
+
+		actual = instance['_transform']({ a: 'b' });
+		assert.equal(actual.join(', '), 'a:b', 'For "{a: b}" value must returns [a:b]');
+
+		actual = instance['_transform']({ a: ['b', 'c'] });
+		assert.equal(actual.join(', '), 'a:b, a:c', 'For "{a: [b, c]}" value must returns [a:b, a:c]');
+
+		actual = instance['_transform']({ a: [['b', 'c']] });
+		assert.equal(actual.join(', '), 'a:b, a:c', 'For "{a: [[b, c]]}" value must returns [a:b, a:c]');
+
+		actual = instance['_transform']({ a: ['b', 'c'] });
+		assert.equal(actual.join(', '), 'a:b, a:c', 'For "{a: [b, c]}" value must returns [a:b, a:c]');
+
+		actual = instance['_transform']({ a: [{'x': 'y'}, 'c'] });
+		assert.equal(actual.join(', '), 'a:c, a:x:y', 'For "{a: [{x: y}, c]}" value must returns [a:c, a:x:y]');
+
+		actual = instance['_transform']({ a: [{ 'x': 'y' }, { 'x': 'y' }] });
+		assert.equal(actual.join(', '), 'a:x:y', 'For "{a: [{x: y}, {x: y}]}" value must returns [a:x:y]');
+
+		actual = instance['_transform']({ a: ['x', 'y', 'x', 'y'] });
+		assert.equal(actual.join(', '), 'a:x, a:y', 'For "{a: [x, y, x, y]}" value must returns [a:x, a:y]');
+
+		actual = instance['_transform']({ a: ['x', 'y', '*'] });
+		assert.equal(actual.join(', '), 'a:*, a:x, a:y', 'For "{a: [x, y, *]}" value must returns [a:*, a:x, a:y]');
+
+		actual = instance['_transform']({ a: [{ 'x': 'y' }, { '*': 'z' }] });
+		assert.equal(actual.join(', '), 'a:*:z, a:x:y', 'For "{a: [{x: y}, {*: z}]}" value must returns [a:*:z, a:x:y]');
+
+		actual = instance['_transform']({ a: [{ 'x': 'y' }, { 'z': '*' }] });
+		assert.equal(actual.join(', '), 'a:x:y, a:z:*', 'For "{a: [{x: y}, {z: *}]}" value must returns [a:x:y, a:z:*]');
+	});
+
+	it('willDispatch throw error if eventType = null or []', function () {
+		var actual: boolean = false,
+			instance: ed.EventDispatcher<ev.Event<Object>, Object>;
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		actual = false;
+		try {
+			instance.willDispatch(null);
+		} catch (e) {
+			actual = true;
+		}
+		assert.equal(actual, true, 'EventDispatcher must throw error if passed eventType = null');
+
+		actual = false;
+		try {
+			instance.willDispatch([]);
+		} catch (e) {
+			actual = true;
+		}
+		assert.equal(actual, true, 'EventDispatcher must throw error if passed eventType = []');
+	});
+
+	it('dispatch event with multiple types', function () {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			actualCall: number[] = [];
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		instance.add(function(event: ev.Event<Object>): void {
+			actualCall.push(1);
+		}, this, 'FIRST');
+
+		instance.add(function(event: ev.Event<Object>): void {
+			actualCall.push(2);
+		}, this, 'SECOND');
+
+		instance.add(function(event: ev.Event<Object>): void {
+			actualCall.push(3);
+		}, this, 'THIRD');
+
+		instance.dispatch(new ev.Event<Object>(['FIRST', 'SECOND', 'THIRD'], {}, false));
+
+		assert.equal(actualCall.join(', '), '1, 2, 3', 'The all listeners must be executed');
+	});
+
+	it('increace types of listener from one to all', function() {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			actualCallCount: number = 0,
+			listener: { (event: ev.Event<Object>): void } = function(event: ev.Event<Object>): void {
+				actualCallCount++
+			};
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		instance.add(listener, this, 'FIRST');
+		instance.add(listener, this, null);
+
+		instance.dispatch(new ev.Event<Object>(['SECOND', 'THIRD'], {}, false));
+
+		assert.equal(actualCallCount, 1, 'The listener must be executed only once');
+	});
+
 });

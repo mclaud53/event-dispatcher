@@ -1,44 +1,12 @@
+declare type EventType = string | string[] | Object | Object[];
+
 /**
  * The base event class.
  *
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
 declare class Event<T> {
-    /**
-     * The type of event.
-     *
-     * @private
-     * @type {string}
-     */
-    private _type;
-    /**
-     * The object that dispatched event.
-     *
-     * @private
-     */
-    private _target;
-    /**
-     * Indicates whether the behavior associated with the event can be prevented.
-     *
-     * @private
-     * @type {boolean}
-     */
-    private _cancellable;
-    /**
-     * Indicates whether the preventDefault() method has been called on the event.
-     *
-     * @private
-     * @type {boolean}
-     * @defaultvalue
-     */
-    private _isDefaultPrevented;
-    /**
-     * The options of event.
-     *
-     * @private
-     * @type {Object}
-     */
-    private _options;
+
     /**
      * @contructor
      * @param {string} type The type of event.
@@ -46,11 +14,11 @@ declare class Event<T> {
      * @param {boolean} cancellable Indicates whether the behavior associated with the event can be prevented.
      * @param {Object} options (optional) The options of event.
      */
-    constructor(type: string, target: T, cancellable: boolean, options?: Object);
+    constructor(type: EventType, target: T, cancellable: boolean, options?: Object);
     /**
      * The type of event.
      */
-    type: string;
+    type: EventType;
     /**
      * The object that dispatched event.
      */
@@ -113,6 +81,7 @@ declare interface ListenerOptions {
      */
     priority?: number;
 }
+
 /**
  * The interface of listener.
  *
@@ -135,14 +104,9 @@ declare interface Listener<E extends Event<T>, T> {
 
     /**
      * The list of types of events that will not be listening by listener.
-     *     The list of valid values:
-     *        null                          - Listens all types of events (by default)
-     *        'eventType'                   - Listens only events that has type 'eventType'
-     *        ['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
-     *
      * @type {string|Array}
      */
-    eventType?: (string | string[]);
+    eventType?: EventType;
 
     /**
      * The options of listener. See ListenerOptions description for details.
@@ -151,36 +115,19 @@ declare interface Listener<E extends Event<T>, T> {
      */
     options?: ListenerOptions;
 }
+
 /**
  * The dispatcher of events.
  *
  * @author Georgii Matvieiev<georgii.matvieiev@gmail.com>
  */
-declare class EventDispatcher<E extends Event<T>, T> {
+export declare class EventDispatcher<E extends Event<T>, T> {
+
     /**
-     * The list of listeners of events.
+     * @constructor
+     * @param {string} separator (By default: ':')
      */
-    private _listeners;
-    /**
-     * Indicates whether listeners are sorted.
-     */
-    private _listenersSorted;
-    /**
-     * The list of listened dispatchers.
-     */
-    private _dispatchers;
-    /**
-     * Event suspend count.
-     */
-    private _suspendCount;
-    /**
-     * Indicates whether suspended event will added to queue.
-     */
-    private _suspendQueue;
-    /**
-     * The queue of suspended events.
-     */
-    private _queue;
+    construct(separator?: string): void;
     /**
      * Indicates whether listeners of events has been added.
      */
@@ -195,16 +142,12 @@ declare class EventDispatcher<E extends Event<T>, T> {
      *
      * @param {Function} listener The listener of the events.
      * @param {Object} scope The scope (this reference) in which the listener function is called.
-     * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will be listened by listener.
-     *     The list of valid values:
-     *        null                          - Listens all types of events (by default)
-     *        'eventType'                   - Listens only events that has type 'eventType'
-     *        ['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
+     * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
      * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
      */
     add(listener: {
         (event: E): void;
-    }, scope: Object, eventType?: (string | string[]), options?: ListenerOptions): void;
+    }, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
     /**
      * Adds the list of listeners of events.
      * If listener already has been added adds types of event and updates options.
@@ -215,7 +158,7 @@ declare class EventDispatcher<E extends Event<T>, T> {
     /**
      * Sends event to listeners.
      *
-     * @param {E} event Event for dispatching.
+     * @param {Event} event Event for dispatching.
      */
     dispatch(event: E): void;
     /**
@@ -233,17 +176,11 @@ declare class EventDispatcher<E extends Event<T>, T> {
      *
      * @param {Function} listener The listener of the events.
      * @param {Object} scope The scope (this reference) in which the listener function is called.
-     * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
-     *     The list of valid values:
-     *        null                          - Removes listener (by default)
-     *        'eventType'                   - Stops listening of events that has type 'eventType'.
-     *                                       If the listener has no other types of events, then listener will be deleted.
-     *        ['eventType1', 'eventType2'] - Stops listening of events that has types 'eventType1' or 'eventType2'.
-     *                                       If the listener has no other types of events, then listener will be deleted.
+     * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
      */
     remove(listener: {
         (event: E): void;
-    }, scope: Object, eventType?: (string | string[])): void;
+    }, scope: Object, eventType?: EventType): void;
     /**
      * Deletes the list of listeners of events.
      *
@@ -267,26 +204,18 @@ declare class EventDispatcher<E extends Event<T>, T> {
      * Subscribes on events of the dispatcher.
      *
      * @param {EventDispatcher} dispatcher Listened dispatcher.
-     * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will be listened by listener.
-     *     The list of valid values:
-     *        null                          - Listens all types of events (by default)
-     *        'eventType'                   - Listens only events that has type 'eventType'
-     *        ['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
+     * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
      * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
      */
-    relay(dispatcher: EventDispatcher<E, T>, eventType?: (string | string[]), options?: ListenerOptions): void;
+    relay(dispatcher: EventDispatcher<E, T>, eventType?: EventType, options?: ListenerOptions): void;
     /**
      * Subscribes on events of the list of dispatchers.
      *
      * @param {EventDispatcher} dispatcher The list of listened dispatchers.
-     * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will be listened by listener.
-     *     The list of valid values:
-     *        null                          - Listens all types of events (by default)
-     *        'eventType'                   - Listens only events that has type 'eventType'
-     *        ['eventType1', 'eventType2'] - Listens events thats has type 'eventType1' or 'eventType2'
+     * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
      * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
      */
-    relayAll(dispatchers: EventDispatcher<E, T>[], eventType?: (string | string[]), options?: ListenerOptions): void;
+    relayAll(dispatchers: EventDispatcher<E, T>[], eventType?: EventType, options?: ListenerOptions): void;
     /**
      * Checks whether listen the dispatcher.
      *
@@ -298,34 +227,23 @@ declare class EventDispatcher<E extends Event<T>, T> {
      * Unsubscribes from events of the dispatcher.
      *
      * @param {EventDispatcher} dispatcher Listened dispatcher.
-     * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will not be listening.
-     *     The list of valid values:
-     *        null                          - Stops listening all events of dispatcher (by default)
-     *        'eventType'                   - Stops listening of events that has type 'eventType'.
-     *                                       If the listener has no other types of events, then listener will be deleted.
-     *        ['eventType1', 'eventType2'] - Stops listening of events that has types 'eventType1' or 'eventType2'.
-     *                                       If the listener has no other types of events, then listener will be deleted.
+     * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening.
      */
-    unrelay(dispatcher: EventDispatcher<E, T>, eventType?: (string | string[])): void;
+    unrelay(dispatcher: EventDispatcher<E, T>, eventType?: EventType): void;
     /**
      * Unsubscribes on events of the list of dispatchers.
      *
      * @param {EventDispatcher} dispatcher The list of listened dispatchers.
-     * @param {string|string[]} eventType (optional; by default: null) The list of types of events that will not be listening.
-     *     The list of valid values:
-     *        null                          - Stops listening all events of dispatcher (by default)
-     *        'eventType'                   - Stops listening of events that has type 'eventType'.
-     *                                       If the listener has no other types of events, then listener will be deleted.
-     *        ['eventType1', 'eventType2'] - Stops listening of events that has types 'eventType1' or 'eventType2'.
-     *                                       If the listener has no other types of events, then listener will be deleted.
+     * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening.
      */
-    unrelayAll(dispatchers: EventDispatcher<E, T>[], eventType?: (string | string[])): void;
+    unrelayAll(dispatchers: EventDispatcher<E, T>[], eventType?: EventType): void;
     /**
      * Clears all (listeners, listened dispatchers, queue of the suspended events).
      */
     purge(): void;
     /**
      * Clears the list of listeners.
+     * @param {Object} scope (optional; by default null)
      */
     purgeListeners(scope?: Object): void;
     /**
@@ -339,19 +257,9 @@ declare class EventDispatcher<E extends Event<T>, T> {
     /**
      * Checks whether exist at least one listener for current type of the event.
      *
-     * @param {string} eventType The type of event.
+     * @param {EventType} eventType The type of event.
      * @return {boolean}
      */
-    willDispatch(eventType: string): boolean;
-    /**
-     * The listener of events for listened dispatchers.
-     *
-     * @private
-     * @param {E} event The event received from listened dispatcher.
-     */
-    private onEvent(event);
-    /**
-     * Orders list of listeners by priority.
-     */
-    private _sortListeners();
+    willDispatch(eventType: EventType): boolean;
 }
+
