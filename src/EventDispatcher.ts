@@ -358,7 +358,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 
 		if (index > -1) {
 			dispatcher.removeListener(this.onEvent, this, eventType);
-			if (!dispatcher.has(this.onEvent, this)) {
+			if (!dispatcher.hasListener(this.onEvent, this)) {
 				this._dispatchers.splice(index, 1);
 			}
 		}
