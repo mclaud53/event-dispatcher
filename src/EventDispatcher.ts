@@ -95,6 +95,14 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
+	 * @depricated Will be removed in version 2.0
+	 */
+	public add(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
+	{
+		this.addListener.apply(this, arguments);
+	}
+
+	/**
 	 * Adds the listener of events.
 	 * If listener already has been added adds types of event and updates options.
 	 *
@@ -103,7 +111,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public add(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
+	public addListener(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
 	{
 		var i: number,
 			l: ListenerHelper<E, T>,
@@ -124,12 +132,20 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
+	 * @depricated Will be removed in version 2.0
+	 */
+	public addAll(listeners: ls.Listener<E, T>[]): void
+	{
+		this.addListeners.apply(this, arguments);
+	}
+
+	/**
 	 * Adds the list of listeners of events.
 	 * If listener already has been added adds types of event and updates options.
 	 *
 	 * @param {Array} listeners The list of listener of the events.
 	 */
-	public addAll(listeners: ls.Listener<E, T>[]): void
+	public addListeners(listeners: ls.Listener<E, T>[]): void
 	{
 		var i: number;
 
@@ -196,13 +212,21 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
+	 * @depricated Will be removed in version 2.0
+	 */
+	public has(listener: ls.ListenerFn<E, T>, scope: Object): boolean
+	{
+		return this.hasListener.apply(this, arguments);
+	}
+
+	/**
 	 * Checks whether a listener is already added.
 	 *
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 * @return {boolean}
 	 */
-	public has(listener: ls.ListenerFn<E, T>, scope: Object): boolean
+	public hasListener(listener: ls.ListenerFn<E, T>, scope: Object): boolean
 	{
 		var i: number;
 
@@ -216,13 +240,21 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
+	 * @depricated Will be removed in version 2.0
+	 */
+	public remove(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null): void
+	{
+		this.removeListener.apply(this, arguments);
+	}
+
+	/**
 	 * Deletes the listener of events.
 	 *
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
 	 */
-	public remove(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null): void
+	public removeListener(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null): void
 	{
 		var i: number,
 			index: number,
@@ -249,11 +281,19 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
+	 * @depricated Will be removed in version 2.0
+	 */
+	public removeAll(listeners: ls.Listener<E, T>[]): void
+	{
+		this.removeListeners.apply(this, arguments);
+	}
+
+	/**
 	 * Deletes the list of listeners of events.
 	 *
 	 * @param {Array} listeners The list of listeners of the events.
 	 */
-	public removeAll(listeners: ls.Listener<E, T>[]): void
+	public removeListeners(listeners: ls.Listener<E, T>[]): void
 	{
 		var i: number;
 

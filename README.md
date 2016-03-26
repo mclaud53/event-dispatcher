@@ -18,7 +18,7 @@ Definitions for typescript:
 ...
   "dependencies": {
   	...
-  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#1.2.2"
+  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#1.3.0"
   	...
   }
 ...
@@ -33,7 +33,7 @@ var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
 // subscribe on event "SOME_EVENT"
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('event received!');
 }, this, 'SOME_EVENT');
 
@@ -46,7 +46,7 @@ To listen several events in one listener:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log(e.type);
 }, this, ['EVENT_1', 'EVENT_2', 'EVENT_3']);
 
@@ -60,7 +60,7 @@ To listen all events in one listener:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log(e.type);
 }, this);
 
@@ -75,8 +75,8 @@ var fed = require('frog-event-dispatcher'),
 		console.log(e.type);
 	};
 
-dispatcher.add(listener, this);
-dispatcher.remove(listener, this, ['EXCLUDED_EVENT', 'EXLUDED_EVENT_TOO']);
+dispatcher.addListener(listener, this);
+dispatcher.removeListener(listener, this, ['EXCLUDED_EVENT', 'EXLUDED_EVENT_TOO']);
 
 dispatcher.dispatch(new fed.Event('ANY_EVENT', this)); // -> ANY_EVENT
 dispatcher.dispatch(new fed.Event('EXCLUDED_EVENT', this)); // -> 
@@ -87,7 +87,7 @@ To add several listeners:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.addAll([
+dispatcher.addListeners([
 	{
 		listener: function (e) {
 			console.log('first listener!');
@@ -121,15 +121,15 @@ To set priority to the listener:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('listener with priority 0');
 }, this, 'SOME_EVENT');	
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('listener with priority -100');
 }, this, 'SOME_EVENT', {priority: -100});
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('listener with priority 100');
 }, this, 'SOME_EVENT', {priority: 100});
 
@@ -145,7 +145,7 @@ Dispatch of cancellable event:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	e.preventDefault();
 }, this, 'SOME_EVENT');
 
@@ -159,7 +159,7 @@ Dispatch event with extra data:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log(e.options);
 }, this, 'SOME_EVENT');
 
@@ -171,7 +171,7 @@ Automatic removal of the listener after receiving the first event:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log(e.type);
 }, this, ['FIRST', 'SECOND'], {single: true});
 
@@ -184,7 +184,7 @@ Addition of the deferred listener:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('event received!');
 }, this, null, {delay: true});
 
@@ -201,7 +201,7 @@ var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher(),
 	time = (new Date()).valueOf();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	var delay = (new Date()).valueOf() - time;
 	console.log('event received! delay: ' + delay);
 }, this, null, {delay: 100});
@@ -219,7 +219,7 @@ var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher(),
 	time = (new Date()).valueOf();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	var delay = (new Date()).valueOf() - time;
 	console.log('event received! delay: ' + delay);
 }, this, null, {buffer: 100});
@@ -239,9 +239,9 @@ var fed = require('frog-event-dispatcher'),
 	listener = function (e) {};
 
 console.log(dispatcher.hasListeners); // -> false
-dispatcher.add(listener, this);
+dispatcher.addListener(listener, this);
 console.log(dispatcher.hasListeners); // -> true
-dispatcher.remove(listener, this);
+dispatcher.removeListener(listener, this);
 console.log(dispatcher.hasListeners); // -> false
 ```
 
@@ -252,9 +252,9 @@ var fed = require('frog-event-dispatcher'),
 	listener = function (e) {};
 
 console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
-dispatcher.add(listener, this, 'SOME_EVENT');
+dispatcher.addListener(listener, this, 'SOME_EVENT');
 console.log(dispatcher.willDispatch('SOME_EVENT')); // -> true
-dispatcher.remove(listener, this, 'SOME_EVENT');
+dispatcher.removeListener(listener, this, 'SOME_EVENT');
 console.log(dispatcher.willDispatch('SOME_EVENT')); // -> false
 ```
 
@@ -264,11 +264,11 @@ var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher(),
 	listener = function (e) {};
 
-console.log(dispatcher.has(listener, this)); // -> false
-dispatcher.add(listener, this, 'SOME_EVENT');
-console.log(dispatcher.has(listener, this)); // -> true
-dispatcher.remove(listener, this, 'SOME_EVENT');
-console.log(dispatcher.has(listener, this)); // -> false
+console.log(dispatcher.hasListener(listener, this)); // -> false
+dispatcher.addListener(listener, this, 'SOME_EVENT');
+console.log(dispatcher.hasListener(listener, this)); // -> true
+dispatcher.removeListener(listener, this, 'SOME_EVENT');
+console.log(dispatcher.hasListener(listener, this)); // -> false
 ```
 
 To suspend a dispatching of events:
@@ -276,7 +276,7 @@ To suspend a dispatching of events:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log(e.type);
 }, this, ['FIRST', 'SECOND']);
 
@@ -298,7 +298,7 @@ To clear queue of the suspended events:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log(e.type);
 }, this, ['FIRST', 'SECOND']);
 
@@ -317,11 +317,11 @@ To remove all listeners:
 var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('first listener');
 }, this);
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('second listener');
 }, this);
 
@@ -337,11 +337,11 @@ var fed = require('frog-event-dispatcher'),
 	scope2 = {},
 	dispatcher = new fed.EventDispatcher();
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('first listener');
 }, scope1);
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('second listener');
 }, scope2);
 
@@ -356,7 +356,7 @@ var fed = require('frog-event-dispatcher'),
 	first = new fed.EventDispatcher(),
 	second = new fed.EventDispatcher();
 
-first.add(function (e) {
+first.addListener(function (e) {
 	console.log('event received!');
 }, this);
 
@@ -371,7 +371,7 @@ var fed = require('frog-event-dispatcher'),
 	first = new fed.EventDispatcher(),
 	second = new fed.EventDispatcher();
 
-first.add(function (e) {
+first.addListener(function (e) {
 	console.log('event received!');
 }, this);
 
@@ -390,7 +390,7 @@ var fed = require('frog-event-dispatcher'),
 	first = new fed.EventDispatcher(),
 	second = new fed.EventDispatcher();
 
-first.add(function (e) {
+first.addListener(function (e) {
 	console.log('event received!');
 }, this);
 
@@ -422,11 +422,11 @@ var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher(),
 	event;
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('first listener');
 }, this, 'EVENT:FIRST');
 
-dispatcher.add(function (e) {
+dispatcher.addListener(function (e) {
 	console.log('second listener');
 }, this, 'EVENT:SECOND');
 
@@ -446,11 +446,11 @@ var fed = require('frog-event-dispatcher'),
 	dispatcher = new fed.EventDispatcher(),
 	event;
 
-dispatcher.add(function (e, extra) {
+dispatcher.addListener(function (e, extra) {
 	console.log(extra);
 }, this, 'EVENT:FIRST', {extra: 'first listener'});
 
-dispatcher.add(function (e, extra) {
+dispatcher.addListener(function (e, extra) {
 	console.log(extra);
 }, this, 'EVENT:SECOND', {extra: 'second listener'});
 
@@ -471,11 +471,11 @@ var fed = require('frog-event-dispatcher'),
 	secondDispatcher = new fed.EventDispatcher(),
 	event = new fed.Event(['FIRST', 'SECOND'], this);
 
-firstDispatcher.add(function (e, extra) {
+firstDispatcher.addListener(function (e, extra) {
 	console.log('first listener');
 }, this, 'FIRST');
 
-secondDispatcher.add(function (e, extra) {
+secondDispatcher.addListener(function (e, extra) {
 	console.log('second listener');
 }, this, 'SECOND');
 
