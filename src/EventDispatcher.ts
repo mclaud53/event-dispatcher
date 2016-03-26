@@ -65,10 +65,15 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	private _separator: string = ':';
 
 	/**
+	 * The stack of dispatching events.
+	 */
+	private _eventsStack: E[] = [];
+
+	/**
 	 * @constructor
 	 * @param {string} separator (By default: ':')
 	 */
-	public construct(separator: string = ':')
+	public constructor(separator: string = ':')
 	{
 		this._separator = separator;
 	}
@@ -146,6 +151,10 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 			listeners: ListenerHelper<E, T>[],
 			me: EventDispatcher<E, T> = this;
 
+		if (this._eventsStack.indexOf(event) > -1) {
+			return;
+		}
+
 		if (this.suspended && !event.cancellable) {
 			if (this._suspendQueue) {
 				this._queue.push(event);
@@ -167,17 +176,22 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 			return;
 		}
 
-		for (i = listeners.length - 1; i >= 0; i--) {
-			listeners[i].dispatch(event, eventTypes);
-			if (listeners[i].single) {
-				if (listeners[i].buffer) {
-					listeners[i].onDispatch = function(l: ListenerHelper<E, T>, e: E) {
-						me._removeListener(l, l.eventTypes);
+		this._eventsStack.push(event);
+		try {
+			for (i = listeners.length - 1; i >= 0; i--) {
+				listeners[i].dispatch(event, eventTypes);
+				if (listeners[i].single) {
+					if (listeners[i].buffer) {
+						listeners[i].onDispatch = function(l: ListenerHelper<E, T>, e: E) {
+							me._removeListener(l, l.eventTypes);
+						}
+					} else {
+						this._removeListener(listeners[i], listeners[i].eventTypes);
 					}
-				} else {
-					this._removeListener(listeners[i], listeners[i].eventTypes);
 				}
 			}
+		} finally {
+			this._eventsStack.pop();
 		}
 	}
 
@@ -294,6 +308,10 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 */
 	public relay(dispatcher: EventDispatcher<E, T>, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
 	{
+		if (this === dispatcher) {
+			throw new Error('Dispatcher can\'t relay self events');
+		}
+
 		if (this.relayed(dispatcher)) {
 			return;
 		}

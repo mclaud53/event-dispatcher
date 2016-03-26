@@ -18,7 +18,7 @@ Definitions for typescript:
 ...
   "dependencies": {
   	...
-  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#1.2.1"
+  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#1.2.2"
   	...
   }
 ...
@@ -432,7 +432,7 @@ dispatcher.add(function (e) {
 
 event = new fed.Event({
 	EVENT: ['FIRST', 'SECOND'] // The same as ['EVENT:FIRST', 'EVENT:SECOND']
-}, this);
+}, this, false);
 
 dispatcher.dispatch(event);
 
@@ -456,12 +456,39 @@ dispatcher.add(function (e, extra) {
 
 event = new fed.Event({
 	EVENT: ['FIRST', 'SECOND'] // The same as ['EVENT:FIRST', 'EVENT:SECOND']
-}, this);
+}, this, false);
 
 dispatcher.dispatch(event);
 
 // -> first listener
 // -> second listener
+```
+
+Cross relay events (Added in release 1.2.2)
+```js
+var fed = require('frog-event-dispatcher'),
+	firstDispatcher = new fed.EventDispatcher(),
+	secondDispatcher = new fed.EventDispatcher(),
+	event = new fed.Event(['FIRST', 'SECOND'], this);
+
+firstDispatcher.add(function (e, extra) {
+	console.log('first listener');
+}, this, 'FIRST');
+
+secondDispatcher.add(function (e, extra) {
+	console.log('second listener');
+}, this, 'SECOND');
+
+firstDispatcher.relay(secondDispatcher);
+secondDispatcher.relay(firstDispatcher);
+
+firstDispatcher.dispatch(event);
+// -> first listener
+// -> second listener
+
+secondDispatcher.dispatch(event);
+// -> second listener
+// -> first listener
 ```
 
 ## License
