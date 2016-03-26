@@ -145,6 +145,10 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      */
     suspended: boolean;
     /**
+     * @depricated Will be removed in version 2.0
+     */
+    add(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
+    /**
      * Adds the listener of events.
      * If listener already has been added adds types of event and updates options.
      *
@@ -153,14 +157,18 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
      * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
      */
-    add(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
+    addListener(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
+    /**
+     * @depricated Will be removed in version 2.0
+     */
+    addAll(listeners: Listener<E, T>[]): void;
     /**
      * Adds the list of listeners of events.
      * If listener already has been added adds types of event and updates options.
      *
      * @param {Array} listeners The list of listener of the events.
      */
-    addAll(listeners: Listener<E, T>[]): void;
+    addListeners(listeners: Listener<E, T>[]): void;
     /**
      * Sends event to listeners.
      *
@@ -168,13 +176,21 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      */
     dispatch(event: E): void;
     /**
+     * @depricated Will be removed in version 2.0
+     */
+    has(listener: ListenerFn<E, T>, scope: Object): boolean;
+    /**
      * Checks whether a listener is already added.
      *
      * @param {Function} listener The listener of the events.
      * @param {Object} scope The scope (this reference) in which the listener function is called.
      * @return {boolean}
      */
-    has(listener: ListenerFn<E, T>, scope: Object): boolean;
+    hasListener(listener: ListenerFn<E, T>, scope: Object): boolean;
+    /**
+     * @depricated Will be removed in version 2.0
+     */
+    remove(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType): void;
     /**
      * Deletes the listener of events.
      *
@@ -182,13 +198,17 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {Object} scope The scope (this reference) in which the listener function is called.
      * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
      */
-    remove(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType): void;
+    removeListener(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType): void;
+    /**
+     * @depricated Will be removed in version 2.0
+     */
+    removeAll(listeners: Listener<E, T>[]): void;
     /**
      * Deletes the list of listeners of events.
      *
      * @param {Array} listeners The list of listeners of the events.
      */
-    removeAll(listeners: Listener<E, T>[]): void;
+    removeListeners(listeners: Listener<E, T>[]): void;
     /**
      * Suspends the dispatch of events.
      * <b>Note that if this is called multiple times, the converse method resume will have to be called the same number of times for it to resume dispatching.</b>

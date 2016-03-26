@@ -15,7 +15,7 @@ describe('EventDispatcher', function() {
 		assert.equal(instance.suspended, false, 'The new EventDispatcher can\'t be suspended');
 	});
 
-	it('add', function() {
+	it('addListener', function() {
 		var target: Object = {},
 			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
 			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
@@ -23,12 +23,12 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 
 		assert.equal(instance.hasListeners, true, 'The EventDispatcher must has listeners');
 	});
 
-	it('has', function() {
+	it('hasListener', function() {
 		var target: Object = {},
 			instance: ed.EventDispatcher<ev.Event<Object>, Object>,
 			listener: { (e: ev.Event<Object>): void } = function(e: ev.Event<Object>): void {
@@ -36,9 +36,9 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 
-		assert.equal(instance.has(listener, target), true, 'The listener must exists in the list of listeners');
+		assert.equal(instance.hasListener(listener, target), true, 'The listener must exists in the list of listeners');
 	});
 
 	it('add & dispatch', function() {
@@ -53,7 +53,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		instance.dispatch(e);
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed');
@@ -71,8 +71,8 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
-		instance.add(listener, target);
+		instance.addListener(listener, target);
+		instance.addListener(listener, target);
 		instance.dispatch(e);
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed only once');
@@ -87,10 +87,10 @@ describe('EventDispatcher', function() {
 			actualCall: number[] = [];
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(function(e: ev.Event<Object>): void {
+		instance.addListener(function(e: ev.Event<Object>): void {
 			actualCall.push(1);
 		}, target);
-		instance.add(function(e: ev.Event<Object>): void {
+		instance.addListener(function(e: ev.Event<Object>): void {
 			actualCall.push(2);
 		}, target);
 		instance.dispatch(e);
@@ -110,8 +110,8 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
-		instance.remove(listener, target);
+		instance.addListener(listener, target);
+		instance.removeListener(listener, target);
 		instance.dispatch(e);
 
 		assert.equal(instance.hasListeners, false, 'The list of listeners must be empty');
@@ -126,7 +126,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.addAll([{
+		instance.addListeners([{
 			listener: listener,
 			scope: target
 		}]);
@@ -146,7 +146,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.addAll([{
+		instance.addListeners([{
 			listener: listener,
 			scope: target
 		}]);
@@ -167,7 +167,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.addAll([
+		instance.addListeners([
 			{
 				listener: listener,
 				scope: target
@@ -194,11 +194,11 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.addAll([{
+		instance.addListeners([{
 			listener: listener,
 			scope: target
 		}]);
-		instance.removeAll([{
+		instance.removeListeners([{
 			listener: listener,
 			scope: target
 		}]);
@@ -229,7 +229,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		instance.suspend(false);
 		instance.dispatch(e);
 
@@ -249,7 +249,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		instance.suspend(false);
 		instance.dispatch(e);
 
@@ -269,7 +269,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		instance.suspend(false);
 		instance.dispatch(e);
 
@@ -293,7 +293,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		instance.suspend(true);
 		instance.dispatch(e);
 
@@ -340,7 +340,7 @@ describe('EventDispatcher', function() {
 		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relay(source);
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		source.dispatch(e);
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed');
@@ -373,7 +373,7 @@ describe('EventDispatcher', function() {
 		source = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relayAll([source, source]);
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		source.dispatch(e);
 
 		assert.equal(actualCallCounter, 1, 'The listener must be executed');
@@ -396,7 +396,7 @@ describe('EventDispatcher', function() {
 		source2 = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relayAll([source1, source2]);
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		source1.dispatch(e);
 		source2.dispatch(e);
 
@@ -421,7 +421,7 @@ describe('EventDispatcher', function() {
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		instance.relayAll([source1, source2]);
 		instance.unrelayAll([source1, source2]);
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		source1.dispatch(e);
 		source2.dispatch(e);
 
@@ -436,7 +436,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 
 		assert.equal(instance.hasListeners, true, 'The EventDispatcher must has listeners');
 
@@ -455,11 +455,11 @@ describe('EventDispatcher', function() {
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(function(e: ev.Event<Object>): void {
+		instance.addListener(function(e: ev.Event<Object>): void {
 			actualCall.push(1);
 		}, target1);
 		
-		instance.add(function(e: ev.Event<Object>): void {
+		instance.addListener(function(e: ev.Event<Object>): void {
 			actualCall.push(2);
 		}, target2);
 
@@ -494,7 +494,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
+		instance.addListener(listener, target);
 		instance.suspend(true);
 		instance.dispatch(e);
 
@@ -516,7 +516,7 @@ describe('EventDispatcher', function() {
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		assert.equal(instance.willDispatch(type), false, 'The new EventDispatcher can\'t dispatch event');
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			// do nothing
 		}, target, type);
 		assert.equal(instance.willDispatch(type), true, 'The EventDispatcher must dispatch events for added listeners');
@@ -534,7 +534,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, type);
+		instance.addListener(listener, target, type);
 		instance.dispatch(e);
 		instance.dispatch(new ev.Event<Object>('WRONG_EVENT_TYPE', target, true, { key: 'value' }));
 
@@ -553,8 +553,8 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target);
-		instance.remove(listener, target, type);
+		instance.addListener(listener, target);
+		instance.removeListener(listener, target, type);
 		assert.equal(instance.willDispatch(type), false, 'The EventDispatcher can\'t dispatch events for excluded types of event');
 
 		instance.dispatch(e);
@@ -575,12 +575,12 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, [allowType, denyType]);
+		instance.addListener(listener, target, [allowType, denyType]);
 
 		assert.equal(instance.willDispatch(allowType), true, 'The EventDispatcher must dispatch events for added listeners');
 		assert.equal(instance.willDispatch(denyType), true, 'The EventDispatcher must dispatch events for added listeners');
 
-		instance.remove(listener, target, denyType);
+		instance.removeListener(listener, target, denyType);
 		assert.equal(instance.willDispatch(allowType), true, 'The EventDispatcher must dispatch events for added listeners');
 		assert.equal(instance.willDispatch(denyType), false, 'The EventDispatcher can\'t dispatch events for excluded types of event');
 
@@ -602,7 +602,7 @@ describe('EventDispatcher', function() {
 			};
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, null, {single: true});
+		instance.addListener(listener, target, null, {single: true});
 		instance.dispatch(e);
 		instance.dispatch(e);
 
@@ -619,15 +619,15 @@ describe('EventDispatcher', function() {
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(function (event: ev.Event<Object>): void {
+		instance.addListener(function (event: ev.Event<Object>): void {
 			actualCall.push(10);
 		}, target, null, { priority: 10 });
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(-10);
 		}, target, null, { priority: -10 });
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(0);
 		}, target, null, { priority: 0 });
 	
@@ -649,7 +649,7 @@ describe('EventDispatcher', function() {
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, null, { delay: 100 });
+		instance.addListener(listener, target, null, { delay: 100 });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
 
@@ -676,7 +676,7 @@ describe('EventDispatcher', function() {
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, null, { defer: true });
+		instance.addListener(listener, target, null, { defer: true });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
 
@@ -700,7 +700,7 @@ describe('EventDispatcher', function() {
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, null, { buffer: 100 });
+		instance.addListener(listener, target, null, { buffer: 100 });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
 
@@ -734,7 +734,7 @@ describe('EventDispatcher', function() {
 			clock: Sinon.SinonFakeTimers = sinon.useFakeTimers();
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
-		instance.add(listener, target, null, { single: true, buffer: 100 });
+		instance.addListener(listener, target, null, { single: true, buffer: 100 });
 		instance.dispatch(e);
 		assert.equal(actualCallCounter, 0, 'The listener can\'t be executed immediately after dispatch');
 
@@ -832,15 +832,15 @@ describe('EventDispatcher', function() {
 			actualCall: number[] = [];
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(1);
 		}, this, 'FIRST');
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(2);
 		}, this, 'SECOND');
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(3);
 		}, this, 'THIRD');
 
@@ -857,8 +857,8 @@ describe('EventDispatcher', function() {
 			};
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(listener, this, 'FIRST');
-		instance.add(listener, this, null);
+		instance.addListener(listener, this, 'FIRST');
+		instance.addListener(listener, this, null);
 
 		instance.dispatch(new ev.Event<Object>(['SECOND', 'THIRD'], {}, false));
 
@@ -872,11 +872,11 @@ describe('EventDispatcher', function() {
 			actualCall: any[] = [];
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(function(event: ev.Event<Object>, extra: any): void {
+		instance.addListener(function(event: ev.Event<Object>, extra: any): void {
 			actualCall.push(extra);
 		}, this, 'FIRST', {extra: 1});
 
-		instance.add(function(event: ev.Event<Object>, extra: any): void {
+		instance.addListener(function(event: ev.Event<Object>, extra: any): void {
 			actualCall.push(extra);
 		}, this, 'SECOND', {extra: 2});
 
@@ -911,11 +911,11 @@ describe('EventDispatcher', function() {
 		first = new ed.EventDispatcher<ev.Event<Object>, Object>();
 		second = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		first.add(function(event: ev.Event<Object>): void {
+		first.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(1);
 		}, this, 'FIRST');
 
-		second.add(function(event: ev.Event<Object>): void {
+		second.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(2);
 		}, this, 'SECOND');
 
@@ -937,11 +937,11 @@ describe('EventDispatcher', function() {
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			actualCall.push(1);
 		}, this);
 
-		instance.add(function(event: ev.Event<Object>): void {
+		instance.addListener(function(event: ev.Event<Object>): void {
 			throw new Error('some error');
 		}, this);
 
