@@ -145,10 +145,6 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      */
     suspended: boolean;
     /**
-     * @depricated Will be removed in version 2.0
-     */
-    add(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
-    /**
      * Adds the listener of events.
      * If listener already has been added adds types of event and updates options.
      *
@@ -158,10 +154,6 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
      */
     addListener(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
-    /**
-     * @depricated Will be removed in version 2.0
-     */
-    addAll(listeners: Listener<E, T>[]): void;
     /**
      * Adds the list of listeners of events.
      * If listener already has been added adds types of event and updates options.
@@ -176,10 +168,6 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      */
     dispatch(event: E): void;
     /**
-     * @depricated Will be removed in version 2.0
-     */
-    has(listener: ListenerFn<E, T>, scope: Object): boolean;
-    /**
      * Checks whether a listener is already added.
      *
      * @param {Function} listener The listener of the events.
@@ -188,10 +176,6 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      */
     hasListener(listener: ListenerFn<E, T>, scope: Object): boolean;
     /**
-     * @depricated Will be removed in version 2.0
-     */
-    remove(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType): void;
-    /**
      * Deletes the listener of events.
      *
      * @param {Function} listener The listener of the events.
@@ -199,10 +183,6 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
      */
     removeListener(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType): void;
-    /**
-     * @depricated Will be removed in version 2.0
-     */
-    removeAll(listeners: Listener<E, T>[]): void;
     /**
      * Deletes the list of listeners of events.
      *

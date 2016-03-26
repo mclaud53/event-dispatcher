@@ -95,14 +95,6 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
-	 * @depricated Will be removed in version 2.0
-	 */
-	public add(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
-	{
-		this.addListener.apply(this, arguments);
-	}
-
-	/**
 	 * Adds the listener of events.
 	 * If listener already has been added adds types of event and updates options.
 	 *
@@ -132,14 +124,6 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
-	 * @depricated Will be removed in version 2.0
-	 */
-	public addAll(listeners: ls.Listener<E, T>[]): void
-	{
-		this.addListeners.apply(this, arguments);
-	}
-
-	/**
 	 * Adds the list of listeners of events.
 	 * If listener already has been added adds types of event and updates options.
 	 *
@@ -150,7 +134,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 		var i: number;
 
 		for (i = listeners.length - 1; i >= 0; i--) {
-			this.add(listeners[i].listener, listeners[i].scope, listeners[i].eventType, listeners[i].options);
+			this.addListener(listeners[i].listener, listeners[i].scope, listeners[i].eventType, listeners[i].options);
 		}
 	}
 
@@ -212,14 +196,6 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
-	 * @depricated Will be removed in version 2.0
-	 */
-	public has(listener: ls.ListenerFn<E, T>, scope: Object): boolean
-	{
-		return this.hasListener.apply(this, arguments);
-	}
-
-	/**
 	 * Checks whether a listener is already added.
 	 *
 	 * @param {Function} listener The listener of the events.
@@ -237,14 +213,6 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 		}
 
 		return false;
-	}
-
-	/**
-	 * @depricated Will be removed in version 2.0
-	 */
-	public remove(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null): void
-	{
-		this.removeListener.apply(this, arguments);
 	}
 
 	/**
@@ -281,14 +249,6 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
-	 * @depricated Will be removed in version 2.0
-	 */
-	public removeAll(listeners: ls.Listener<E, T>[]): void
-	{
-		this.removeListeners.apply(this, arguments);
-	}
-
-	/**
 	 * Deletes the list of listeners of events.
 	 *
 	 * @param {Array} listeners The list of listeners of the events.
@@ -298,7 +258,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 		var i: number;
 
 		for (i = 0; i < listeners.length; i++) {
-			this.remove(listeners[i].listener, listeners[i].scope, listeners[i].eventType);
+			this.removeListener(listeners[i].listener, listeners[i].scope, listeners[i].eventType);
 		}
 	}
 
@@ -356,7 +316,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 			return;
 		}
 
-		dispatcher.add(this.onEvent, this, eventType, options);
+		dispatcher.addListener(this.onEvent, this, eventType, options);
 		this._dispatchers.push(dispatcher);
 	}
 
@@ -397,7 +357,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 		var index: number = this._dispatchers.indexOf(dispatcher);
 
 		if (index > -1) {
-			dispatcher.remove(this.onEvent, this, eventType);
+			dispatcher.removeListener(this.onEvent, this, eventType);
 			if (!dispatcher.has(this.onEvent, this)) {
 				this._dispatchers.splice(index, 1);
 			}
@@ -457,7 +417,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	{
 		var i: number;
 		for (i = 0; i < this._dispatchers.length; i++) {
-			this._dispatchers[i].remove(this.onEvent, this);
+			this._dispatchers[i].removeListener(this.onEvent, this);
 		}
 		this._dispatchers.length = 0;
 	}
