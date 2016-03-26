@@ -144,6 +144,7 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * Indicates whether events suspended.
      */
     suspended: boolean;
+    separator: string;
     /**
      * Adds the listener of events.
      * If listener already has been added adds types of event and updates options.

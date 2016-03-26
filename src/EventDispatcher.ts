@@ -95,6 +95,16 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	}
 
 	/**
+	 * Returns separator. 
+	 *
+	 * @type {string}
+	 */
+	public get separator(): string
+	{
+		return this._separator;
+	}
+
+	/**
 	 * Adds the listener of events.
 	 * If listener already has been added adds types of event and updates options.
 	 *
