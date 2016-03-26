@@ -964,4 +964,14 @@ describe('EventDispatcher', function() {
 		assert.equal(actual, true, 'Error must be thrown');
 		assert.equal(actualCall.join(', '), '1, 1', 'Cross releay of EventDispatchers failed');
 	});
+
+	it('separator field', function () {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>;
+
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		assert.equal(instance.separator, ':', 'The wrong value of default separator');
+
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>('@separator@');
+		assert.equal(instance.separator, '@separator@', 'The wrong value of user specified separator');
+	});
 });
