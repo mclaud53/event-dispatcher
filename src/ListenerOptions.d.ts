@@ -38,4 +38,10 @@ export interface ListenerOptions
 	 * By default: 0.
 	 */
 	priority?: number;
+
+	/**
+	 * The extra data for listener.
+	 * By default: null.
+	 */
+	extra?: any;
 }

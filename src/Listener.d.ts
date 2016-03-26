@@ -1,6 +1,8 @@
 import ev = require('./Event');
 import lo = require('./ListenerOptions');
 
+export type ListenerFn<E extends ev.Event<T>, T> = { (event: E, extra?: any): void };
+
 /**
  * The interface of listener.
  *
@@ -13,7 +15,7 @@ export interface Listener<E extends ev.Event<T>, T>
 	 *
 	 * @type {Function}
 	 */
-	listener: { (event: E): void };
+	listener: ListenerFn<E, T>;
 
 	/**
 	 * The scope (this reference) in which the listener function is called.

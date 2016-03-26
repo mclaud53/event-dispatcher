@@ -98,7 +98,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
 	 * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
 	 */
-	public add(listener: { (event: E): void }, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
+	public add(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null, options: lo.ListenerOptions = null): void
 	{
 		var i: number,
 			l: ListenerHelper<E, T>,
@@ -188,7 +188,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 * @return {boolean}
 	 */
-	public has(listener: { (event: E): void }, scope: Object): boolean
+	public has(listener: ls.ListenerFn<E, T>, scope: Object): boolean
 	{
 		var i: number;
 
@@ -208,7 +208,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
 	 */
-	public remove(listener: { (event: E): void }, scope: Object, eventType: ev.EventType = null): void
+	public remove(listener: ls.ListenerFn<E, T>, scope: Object, eventType: ev.EventType = null): void
 	{
 		var i: number,
 			index: number,
@@ -639,7 +639,7 @@ class ListenerHelper<E extends ev.Event<T>, T>
 	/**
 	 * The listener of the events.
 	 */
-	private _listener: { (event: E): void };
+	private _listener: ls.ListenerFn<E, T>;
 
 	/**
 	 * The scope (this reference) in which the listener function is called.
@@ -670,7 +670,7 @@ class ListenerHelper<E extends ev.Event<T>, T>
 	 * @param {Function} listener The listener of the events.
 	 * @param {Object} scope The scope (this reference) in which the listener function is called.
 	 */
-	public constructor(listener: { (event: E): void }, scope: Object, eventTypes: string[], options: lo.ListenerOptions)
+	public constructor(listener: ls.ListenerFn<E, T>, scope: Object, eventTypes: string[], options: lo.ListenerOptions)
 	{
 		this._order = ++ListenerHelper._orderGen;
 		this._listener = listener;
@@ -728,6 +728,15 @@ class ListenerHelper<E extends ev.Event<T>, T>
 		}
 
 		this._options = options;
+	}
+
+	public get extra(): any
+	{
+		if (this._options &&  this._options.hasOwnProperty('extra')) {
+			return this._options.extra;
+		} else {
+			return null;
+		}
 	}
 
 	public get single(): boolean
@@ -973,7 +982,7 @@ class ListenerHelper<E extends ev.Event<T>, T>
 	 */
 	private _dispatch(event: E): void
 	{
-		this._listener.call(this._scope, event);
+		this._listener.call(this._scope, event, this.extra);
 
 		if (this.onDispatch) {
 			this.onDispatch(this, event);
