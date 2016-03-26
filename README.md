@@ -18,7 +18,7 @@ Definitions for typescript:
 ...
   "dependencies": {
   	...
-  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#1.2.0"
+  	"frog-event-dispatcher": "github:mclaud53/event-dispatcher/event-dispatcher.d.ts#1.2.1"
   	...
   }
 ...
@@ -415,6 +415,55 @@ console.log(first.relayed(second)); // -> true
 first.unrelayAll([second]);
 console.log(first.relayed(second)); // -> false
 ```
+
+To send event with multiple targets (Added in release 1.2.0):
+```js
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
+	event;
+
+dispatcher.add(function (e) {
+	console.log('first listener');
+}, this, 'EVENT:FIRST');
+
+dispatcher.add(function (e) {
+	console.log('second listener');
+}, this, 'EVENT:SECOND');
+
+event = new fed.Event({
+	EVENT: ['FIRST', 'SECOND'] // The same as ['EVENT:FIRST', 'EVENT:SECOND']
+}, this);
+
+dispatcher.dispatch(event);
+
+// -> first listener
+// -> second listener
+```
+
+To add listener with extra data (Added in release 1.2.1):
+```js
+var fed = require('frog-event-dispatcher'),
+	dispatcher = new fed.EventDispatcher(),
+	event;
+
+dispatcher.add(function (e, extra) {
+	console.log(extra);
+}, this, 'EVENT:FIRST', {extra: 'first listener'});
+
+dispatcher.add(function (e, extra) {
+	console.log(extra);
+}, this, 'EVENT:SECOND', {extra: 'second listener'});
+
+event = new fed.Event({
+	EVENT: ['FIRST', 'SECOND'] // The same as ['EVENT:FIRST', 'EVENT:SECOND']
+}, this);
+
+dispatcher.dispatch(event);
+
+// -> first listener
+// -> second listener
+```
+
 ## License
 
 MIT

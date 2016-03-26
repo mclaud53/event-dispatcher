@@ -41,6 +41,8 @@ declare class Event<T> {
     preventDefault(): void;
 }
 
+export type ListenerFn<E extends Event<T>, T> = { (event: E, extra?: any): void };
+
 /**
  * The interface of options of listener.
  *
@@ -80,6 +82,12 @@ declare interface ListenerOptions {
      * By default: 0.
      */
     priority?: number;
+
+    /**
+     * The extra data for listener.
+     * By default: null.
+     */
+    extra?: any;    
 }
 
 /**
@@ -93,7 +101,7 @@ declare interface Listener<E extends Event<T>, T> {
      *
      * @type {Function}
      */
-    listener: { (event: E): void };
+    listener: ListenerFn<E, T>;
 
     /**
      * The scope (this reference) in which the listener function is called.
@@ -145,9 +153,7 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {EventType} eventType (optional; by default: null) The list of types of events that will be listened by listener.
      * @param {Object} options (optional; by default: null) The options of listener. See ListenerOptions description for details.
      */
-    add(listener: {
-        (event: E): void;
-    }, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
+    add(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType, options?: ListenerOptions): void;
     /**
      * Adds the list of listeners of events.
      * If listener already has been added adds types of event and updates options.
@@ -168,9 +174,7 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {Object} scope The scope (this reference) in which the listener function is called.
      * @return {boolean}
      */
-    has(listener: {
-        (event: E): void;
-    }, scope: Object): boolean;
+    has(listener: ListenerFn<E, T>, scope: Object): boolean;
     /**
      * Deletes the listener of events.
      *
@@ -178,9 +182,7 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * @param {Object} scope The scope (this reference) in which the listener function is called.
      * @param {EventType} eventType (optional; by default: null) The list of types of events that will not be listening by listener.
      */
-    remove(listener: {
-        (event: E): void;
-    }, scope: Object, eventType?: EventType): void;
+    remove(listener: ListenerFn<E, T>, scope: Object, eventType?: EventType): void;
     /**
      * Deletes the list of listeners of events.
      *

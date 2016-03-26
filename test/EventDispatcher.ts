@@ -865,4 +865,24 @@ describe('EventDispatcher', function() {
 		assert.equal(actualCallCount, 1, 'The listener must be executed only once');
 	});
 
+	// release 1.2.1
+
+	it('add extra & dispatch', function() {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			actualCall: any[] = [];
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		instance.add(function(event: ev.Event<Object>, extra: any): void {
+			actualCall.push(extra);
+		}, this, 'FIRST', {extra: 1});
+
+		instance.add(function(event: ev.Event<Object>, extra: any): void {
+			actualCall.push(extra);
+		}, this, 'SECOND', {extra: 2});
+
+		instance.dispatch(new ev.Event<Object>(['FIRST', 'SECOND'], {}, false));
+
+		assert.equal(actualCall.join(', '), '1, 2', 'The extra data is wrong');
+	});	
+
 });
