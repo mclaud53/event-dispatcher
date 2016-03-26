@@ -883,6 +883,85 @@ describe('EventDispatcher', function() {
 		instance.dispatch(new ev.Event<Object>(['FIRST', 'SECOND'], {}, false));
 
 		assert.equal(actualCall.join(', '), '1, 2', 'The extra data is wrong');
-	});	
+	});
 
+	// release 1.2.2
+
+	it('self relay', function() {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			actual: boolean = false;
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		try {
+			instance.relay(instance);
+		} catch (e) {
+			actual = true;
+		}
+
+		assert.equal(actual, true, 'EventDispatcher must throw Error if try to releay self events');
+	});
+
+	it('cross relay', function() {
+		var first: ed.EventDispatcher<ev.Event<Object>, Object>,
+			second: ed.EventDispatcher<ev.Event<Object>, Object>,
+			target: Object = {},
+			e: ev.Event<Object> = new ev.Event<Object>(['FIRST', 'SECOND'], target, false),
+			actualCall: any[] = [];
+
+		first = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		second = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		first.add(function(event: ev.Event<Object>): void {
+			actualCall.push(1);
+		}, this, 'FIRST');
+
+		second.add(function(event: ev.Event<Object>): void {
+			actualCall.push(2);
+		}, this, 'SECOND');
+
+		first.relay(second);
+		second.relay(first);
+
+		first.dispatch(e);
+		second.dispatch(e);
+
+		assert.equal(actualCall.join(', '), '1, 2, 2, 1', 'Cross releay of EventDispatchers failed');
+	});
+
+	it('listener throw exception', function() {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			target: Object = {},
+			e: ev.Event<Object> = new ev.Event<Object>(['FIRST', 'SECOND'], target, false),
+			actualCall: any[] = [],
+			actual: boolean = false;
+
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+
+		instance.add(function(event: ev.Event<Object>): void {
+			actualCall.push(1);
+		}, this);
+
+		instance.add(function(event: ev.Event<Object>): void {
+			throw new Error('some error');
+		}, this);
+
+		actual = false;
+		try {
+			instance.dispatch(e);
+		} catch (e) {
+			actual = true;
+		}
+
+		assert.equal(actual, true, 'Error must be thrown');
+
+		actual = false;
+		try {
+			instance.dispatch(e);
+		} catch (e) {
+			actual = true;
+		}
+		
+		assert.equal(actual, true, 'Error must be thrown');
+		assert.equal(actualCall.join(', '), '1, 1', 'Cross releay of EventDispatchers failed');
+	});
 });
