@@ -200,8 +200,9 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      *
      * @param {boolean} queue Pass as true to queue up suspended events to be dispatch after the resume call instead of discarding all suspended events.
      * @param {string|null} token (By default: null)
+     * @returns {string} token
      */
-    suspend(queue: boolean, token?: string): void;
+    suspend(queue: boolean, token?: string): string;
     /**
      * Resumes firing events (see suspend).
      * If events were suspended using the queueSuspended parameter, then all events fired during event suspension will be sent to any listeners now.
