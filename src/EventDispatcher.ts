@@ -16,6 +16,10 @@ type EventTypeDiff = {
  */
 export class EventDispatcher<E extends ev.Event<T>, T>
 {
+	/**
+	 * The generator of unique tockens for suspend/resume methods.
+	 */
+	private static _suspendTokenGen: number = 0;
 
 	/**
 	 * The list of listeners of events.
@@ -45,9 +49,9 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	private _dispatchers: EventDispatcher<E, T>[] = [];
 
 	/**
-	 * Event suspend count.
+	 * The list of tockens for suspend/resume methods.
 	 */
-	private _suspendCount: number = 0;
+	private _suspendTokens: string[] = [];
 
 	/**
 	 * Indicates whether suspended event will added to queue.
@@ -57,7 +61,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	/**
 	 * The queue of suspended events.
 	 */
-	private _queue: E[] = [];
+	private _queue: (string|E)[] = [];
 
 	/**
 	 * The separator between different deep of type of event.
@@ -91,7 +95,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 */
 	public get suspended(): boolean
 	{
-		return this._suspendCount > 0;
+		return this._suspendTokens.length > 0;
 	}
 
 	/**
@@ -278,30 +282,52 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 	 * <b>Note the cancellable events can't be suspended.</b>
 	 *
 	 * @param {boolean} queue Pass as true to queue up suspended events to be dispatch after the resume call instead of discarding all suspended events.
+	 * @param {string|null} token (By default: null)
 	 */
-	public suspend(queue: boolean): void
+	public suspend(queue: boolean, token: string = null): string
 	{
-		this._suspendCount++;
+		if (null === token) {
+			token = (++EventDispatcher._suspendTokenGen).toString();
+		}
+		if (this._suspendTokens.indexOf(token) === -1) {
+			this._suspendTokens.push(token);
+		}
 		if (queue) {
 			this._suspendQueue = true;
 		}
+		if (this._suspendQueue && this._queue.indexOf(token) === -1) {
+			this._queue.push(token);
+		}
+		return token;
 	}
 
 	/**
 	 * Resumes firing events (see suspend).
 	 * If events were suspended using the queueSuspended parameter, then all events fired during event suspension will be sent to any listeners now.
+	 *
+	 * @param {string|null} token (By default: null)
 	 */
-	public resume(): void
+	public resume(token: string = null): void
 	{
-		var event: E;
+		var index: number,
+			event: string | E;
 
-		if (this._suspendCount > 0) {
-			this._suspendCount--;
+		if (token === null) {
+			token = this._suspendTokens.pop();
+		} else {
+			index = this._suspendTokens.indexOf(token);
+			if (index === -1) {
+				return;
+			} else {
+				this._suspendTokens.splice(index, 1);
+			}
 		}
 
 		while (!this.suspended && (this._queue.length > 0)) {
 			event = this._queue.shift();
-			this.dispatch(event);
+			if (event instanceof ev.Event) {
+				this.dispatch(event);
+			}
 		}
 
 		if (!this.suspended) {
@@ -434,10 +460,35 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 
 	/**
 	 * Clears the queue of the suspended events.
+	 * 
+	 * @param {string|null} token (By default: null) 
 	 */
-	public purgeQueue(): void
+	public purgeQueue(token: string = null): void
 	{
-		this._queue.length = 0;
+		var i: number,
+			index: number,
+			start: number,
+			count: number = 0,
+			event: string | E,
+			events: (string | E)[];
+
+		if (null === token) {
+			this._queue.length = 0;
+		} else {
+			index = this._queue.indexOf(token);
+			if (index > -1) {
+				events = [];
+				for (i = this._queue.length - 1; i >= index; i--) {
+					event = this._queue.pop();
+					if (!(event instanceof ev.Event)) {
+						events.push(event);
+					}
+				}
+				for (i = events.length - 1; i >= 0; i--) {
+					this._queue.push(events.pop());
+				}
+			}
+		}
 	}
 
 	/**

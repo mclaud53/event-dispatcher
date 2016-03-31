@@ -965,6 +965,8 @@ describe('EventDispatcher', function() {
 		assert.equal(actualCall.join(', '), '1, 1', 'Cross releay of EventDispatchers failed');
 	});
 
+	// release 2.0.0
+
 	it('separator field', function () {
 		var instance: ed.EventDispatcher<ev.Event<Object>, Object>;
 
@@ -973,5 +975,37 @@ describe('EventDispatcher', function() {
 
 		instance = new ed.EventDispatcher<ev.Event<Object>, Object>('@separator@');
 		assert.equal(instance.separator, '@separator@', 'The wrong value of user specified separator');
+	});
+
+	it('suspend & purgeQueue & resume by token', function () {
+		var instance: ed.EventDispatcher<ev.Event<Object>, Object>,
+			target: Object = {},
+			token1: string,
+			token2: string = 'custom',
+			token3: string,
+			actualCall: number[] = [];
+
+		instance = new ed.EventDispatcher<ev.Event<Object>, Object>();
+		instance.addListener(function(event: ev.Event<Object>): void {
+			actualCall.push(event.options['key']);
+		}, this);
+
+		token1 = instance.suspend(true);
+		instance.dispatch(new ev.Event<Object>('EVENT', target, false, {key: 1}));
+		instance.dispatch(new ev.Event<Object>('EVENT', target, false, {key: 2}));
+		assert.equal(actualCall.length, 0, 'EventDispatcher must not dispatch events');
+		assert.equal(instance.suspend(true, token2), token2, 'EventDispatcher must return token if them passed');
+		instance.dispatch(new ev.Event<Object>('EVENT', target, false, {key: 3}));
+		instance.dispatch(new ev.Event<Object>('EVENT', target, false, {key: 4}));
+		token3 = instance.suspend(true);
+		instance.purgeQueue(token2);
+		instance.resume(token2);
+		assert.equal(actualCall.length, 0, 'EventDispatcher must not dispatch events');
+		instance.dispatch(new ev.Event<Object>('EVENT', target, false, {key: 5}));
+		instance.resume(token1);
+		instance.dispatch(new ev.Event<Object>('EVENT', target, false, {key: 6}));
+		assert.equal(actualCall.length, 0, 'EventDispatcher must not dispatch events');
+		instance.resume(token3);
+		assert.equal(actualCall.join(', '), '1, 2, 5, 6', 'EventDispatcher must dispatch events');
 	});
 });

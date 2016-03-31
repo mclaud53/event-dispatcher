@@ -144,6 +144,9 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * Indicates whether events suspended.
      */
     suspended: boolean;
+    /*
+     * The separator between different parts of type of event.
+     */
     separator: string;
     /**
      * Adds the listener of events.
@@ -196,13 +199,14 @@ export declare class EventDispatcher<E extends Event<T>, T> {
      * <b>Note the cancellable events can't be suspended.</b>
      *
      * @param {boolean} queue Pass as true to queue up suspended events to be dispatch after the resume call instead of discarding all suspended events.
+     * @param {string|null} token (By default: null)
      */
-    suspend(queue: boolean): void;
+    suspend(queue: boolean, token?: string): void;
     /**
      * Resumes firing events (see suspend).
      * If events were suspended using the queueSuspended parameter, then all events fired during event suspension will be sent to any listeners now.
      */
-    resume(): void;
+    resume(token?: string): void;
     /**
      * Subscribes on events of the dispatcher.
      *
@@ -255,8 +259,9 @@ export declare class EventDispatcher<E extends Event<T>, T> {
     purgeDispatchers(): void;
     /**
      * Clears the queue of the suspended events.
+     * @param {string|null} token (By default: null)
      */
-    purgeQueue(): void;
+    purgeQueue(token?: string): void;
     /**
      * Checks whether exist at least one listener for current type of the event.
      *
