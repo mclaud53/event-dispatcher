@@ -34,8 +34,8 @@ module.exports = {
             fast: 'newer',
             module: 'amd',
             target: 'es5',
-            comments: true,
-            declaration: true,
+            comments: false,
+            declaration: false,
             rootDir: 'src',
             sourceMap: false
         }

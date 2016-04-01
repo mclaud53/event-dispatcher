@@ -4,6 +4,8 @@ module.exports = function (grunt) {
     // Load grunt tasks automatically
     grunt.loadNpmTasks('grunt-notify');
 
+    // grunt.loadNpmTasks('dts-generator');
+
     require('load-grunt-config')(grunt, {
         jitGrunt: {
         }
@@ -25,6 +27,7 @@ module.exports = function (grunt) {
         'mochaTest:test',
         'ts:buildNode',
         'ts:buildBower',
-        'uglify:default'
+        'uglify:default',
+        'dtsGenerator:default'
     ]);
 };
