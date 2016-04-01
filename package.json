@@ -2,7 +2,13 @@
   "name": "frog-event-dispatcher",
   "version": "1.3.0",
   "description": "Implementation of EventDispatcher for client side and server side",
-  "main": "event-dispatcher.js",
+  "main": "index.js",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "index.js",
+    "js/"
+  ],
   "scripts": {
     "test": "grunt test"
   },

@@ -14,15 +14,17 @@ module.exports = function (grunt) {
     grunt.registerTask('test', [
         'clean:default',
         'typings:default',
-        'ts:default',
+        'ts:test',
         'mochaTest:test'
     ]);
 
     grunt.registerTask('build', [
         'clean:default',
         'typings:default',
-        'ts:default',
+        'ts:test',
         'mochaTest:test',
+        'ts:buildNode',
+        'ts:buildBower',
         'uglify:default'
     ]);
 };

@@ -1,7 +1,7 @@
 module.exports = {
     default: {
         files: {
-            'event-dispatcher.js': ['out/src/*.js']
+            'event-dispatcher.js': ['event-dispatcher.js']
         }
     }
 };
