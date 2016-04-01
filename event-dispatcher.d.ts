@@ -404,3 +404,5 @@ declare module 'frog-event-dispatcher/EventDispatcher' {
 	}
 
 }
+declare module 'frog-event-dispatcher' {
+	}
