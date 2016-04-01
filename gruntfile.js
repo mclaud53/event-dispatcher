@@ -27,7 +27,6 @@ module.exports = function (grunt) {
         'mochaTest:test',
         'ts:buildNode',
         'ts:buildBower',
-        'uglify:default',
-        'dtsGenerator:default'
+        'uglify:default'
     ]);
 };
