@@ -111,7 +111,7 @@ var EventDispatcher = (function () {
     EventDispatcher.prototype.removeListener = function (listener, scope, eventType) {
         if (eventType === void 0) { eventType = null; }
         var i, index, eventTypes = this._transform(eventType), l = null, diff;
-        for (i = this._listeners.length - 1; i >= 0; i++) {
+        for (i = this._listeners.length - 1; i >= 0; i--) {
             l = this._listeners[i];
             if ((l.listener === listener) && (l.scope === scope)) {
                 if (null === eventTypes) {
