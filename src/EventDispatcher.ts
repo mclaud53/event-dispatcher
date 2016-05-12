@@ -244,7 +244,7 @@ export class EventDispatcher<E extends ev.Event<T>, T>
 			l: ListenerHelper<E, T> = null,
 			diff: EventTypeDiff;
 
-		for (i = this._listeners.length - 1; i >= 0; i++) {
+		for (i = this._listeners.length - 1; i >= 0; i--) {
 			l = this._listeners[i];
 			if ((l.listener === listener) && (l.scope === scope)) {
 				if (null === eventTypes) {
