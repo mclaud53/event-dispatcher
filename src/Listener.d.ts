@@ -33,7 +33,7 @@ export interface Listener<E extends ev.Event<T>, T>
 	 *
 	 * @type {string|Array}
 	 */
-	eventType?: (string | string[]);
+	eventType?: ev.EventType;
 
 	/**
      * The options of listener. See ListenerOptions description for details.

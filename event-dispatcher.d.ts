@@ -119,7 +119,7 @@ export interface Listener<E extends Event<T>, T>
 	 *
 	 * @type {string|Array}
 	 */
-	eventType?: (string | string[]);
+    eventType?: EventType;
 
 	/**
      * The options of listener. See ListenerOptions description for details.
